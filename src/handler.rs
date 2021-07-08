@@ -1,18 +1,44 @@
 use serenity::{
-    async_trait,
-    model::{gateway::Ready, event::PresenceUpdateEvent},
-    prelude::*,
+	async_trait,
+	model::{gateway::Ready, event::PresenceUpdateEvent, channel::Message},
+	prelude::*,
 };
+use serenity::model::id::{ChannelId, MessageId, GuildId};
+use serenity::model::event::MessageUpdateEvent;
 
 pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn ready(&self, _: Context, ready: Ready) {
-        println!("{} is connected!", ready.user.name);
-    }
+	async fn message(&self, _ctx: Context, message: Message) {
 
-    async fn presence_update(&self, _: Context, presence: PresenceUpdateEvent) {
-        let presence = presence.presence;
-    }
+	}
+
+	async fn message_delete(
+		&self,
+		_ctx: Context,
+		_channel_id: ChannelId,
+		_deleted_message_id: MessageId,
+		_guild_id: Option<GuildId>
+	) {
+
+	}
+
+	async fn message_update(
+		&self,
+		_ctx: Context,
+		_old_if_available: Option<Message>,
+		_new: Option<Message>,
+		_event: MessageUpdateEvent
+	) {
+
+	}
+
+	async fn presence_update(&self, _ctx: Context, presence: PresenceUpdateEvent) {
+		let presence = presence.presence;
+	}
+
+	async fn ready(&self, _ctx: Context, ready: Ready) {
+		println!("{} is connected!", ready.user.name);
+	}
 }
