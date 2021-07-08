@@ -35,7 +35,7 @@ impl EventHandler for Handler {
 	}
 
 	async fn presence_update(&self, _ctx: Context, presence: PresenceUpdateEvent) {
-		let presence = presence.presence;
+		let _presence = presence.presence;
 	}
 
 	async fn ready(&self, _ctx: Context, ready: Ready) {
