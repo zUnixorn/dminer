@@ -1,7 +1,8 @@
 mod handler;
 mod user_db;
+mod activity_db;
+mod messages_db;
 
-use handler::Handler;
 use std::env;
 use tokio;
 use serenity::{
