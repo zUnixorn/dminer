@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 struct UserDb {
 	user_id: i64,
-	username: String
+	username: Option<String>,
 }
 
 impl Display for UserDb {
