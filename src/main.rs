@@ -1,3 +1,7 @@
 fn main() {
-    println!("Hello, world!");
+    bint("bogos")
+}
+
+fn bint(bogos: &str) {
+    println!("{}", bogos)
 }
