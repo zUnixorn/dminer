@@ -34,11 +34,18 @@ impl EventHandler for Handler {
 
 	}
 
-	async fn presence_update(&self, _ctx: Context, presence: PresenceUpdateEvent) {
-		let _presence = presence.presence;
+	async fn presence_update(
+		&self, _ctx: Context,
+		new_data: PresenceUpdateEvent
+	) {
+		let _presence = new_data.presence;
 	}
 
-	async fn ready(&self, _ctx: Context, ready: Ready) {
-		println!("{} is connected!", ready.user.name);
+	async fn ready(
+		&self,
+		_ctx: Context,
+		data_about_bot: Ready
+	) {
+		println!("{} is connected!", data_about_bot.user.name);
 	}
 }
