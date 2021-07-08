@@ -21,7 +21,7 @@ impl EventHandler for Handler {
 		_deleted_message_id: MessageId,
 		_guild_id: Option<GuildId>
 	) {
-
+		println!("Message with id {} was deleted", _deleted_message_id)
 	}
 
 	async fn message_update(
