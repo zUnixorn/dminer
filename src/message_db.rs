@@ -1,10 +1,10 @@
 use std::fmt::{Display, Formatter};
 
 struct MessageDB {
-	message_id: i64,
-	author: i64,
-	channel_id: i64,
-	guild_id: Option<i64>,
+	message_id: u64,
+	author: u64,
+	channel_id: u64,
+	guild_id: Option<u64>,
 	content: String
 }
 
