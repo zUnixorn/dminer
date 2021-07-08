@@ -1,4 +1,5 @@
 mod handler;
+mod user;
 
 use handler::Handler;
 use std::env;
