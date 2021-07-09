@@ -6,12 +6,16 @@ use serenity::{
 use serenity::model::id::{ChannelId, MessageId, GuildId};
 use serenity::model::event::MessageUpdateEvent;
 
+use crate::message_db;
+use crate::message_db::message_db::MessageDb;
+
 pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
 	async fn message(&self, _ctx: Context, message: Message) {
-		println!("Message by: {} with content: {}", message.author.name, message.content)
+		println!("Message by: {} with content: {}", message.author.name, message.content);
+		let msg = MessageDb::from(message);
 	}
 
 	async fn message_delete(
