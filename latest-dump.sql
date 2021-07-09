@@ -8,7 +8,7 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
+SET client_encoding = 'SQL_ASCII';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
@@ -42,8 +42,8 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.activities (
-    user_id bigint,
-    application_id bigint,
+    user_id bigint NOT NULL,
+    application_id bigint NOT NULL,
     assets text,
     details text,
     kind public.activity_type NOT NULL,
@@ -63,10 +63,10 @@ ALTER TABLE public.activities OWNER TO dminer;
 
 CREATE TABLE public.messages (
     message_id bigint NOT NULL,
-    author bigint NOT NULL,
-    channel_id bigint,
+    channel_id bigint NOT NULL,
     guild_id bigint,
-    content text NOT NULL
+    content text,
+    author bigint
 );
 
 
@@ -96,7 +96,7 @@ COPY public.activities (user_id, application_id, assets, details, kind, activity
 -- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: dminer
 --
 
-COPY public.messages (message_id, author, channel_id, guild_id, content) FROM stdin;
+COPY public.messages (message_id, channel_id, guild_id, content, author) FROM stdin;
 \.
 
 
@@ -106,6 +106,14 @@ COPY public.messages (message_id, author, channel_id, guild_id, content) FROM st
 
 COPY public.users (user_id, username) FROM stdin;
 \.
+
+
+--
+-- Name: activities activities_pkey; Type: CONSTRAINT; Schema: public; Owner: dminer
+--
+
+ALTER TABLE ONLY public.activities
+    ADD CONSTRAINT activities_pkey PRIMARY KEY (user_id, start_timestamp);
 
 
 --
@@ -121,7 +129,7 @@ ALTER TABLE ONLY public.users
 --
 
 ALTER TABLE ONLY public.activities
-    ADD CONSTRAINT activities_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+    ADD CONSTRAINT activities_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 
 --
@@ -129,7 +137,7 @@ ALTER TABLE ONLY public.activities
 --
 
 ALTER TABLE ONLY public.messages
-    ADD CONSTRAINT messages_author_fkey FOREIGN KEY (author) REFERENCES public.users(user_id);
+    ADD CONSTRAINT messages_author_fkey FOREIGN KEY (author) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 
 --
