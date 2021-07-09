@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-struct MessageDB {
+struct MessageDb {
 	message_id: u64,
 	author: u64,
 	channel_id: u64,
@@ -8,7 +8,7 @@ struct MessageDB {
 	content: String
 }
 
-impl Display for MessageDB {
+impl Display for MessageDb {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		let guild_id = match self.guild_id {
 			None => 0,
