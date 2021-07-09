@@ -6,7 +6,6 @@ use serenity::{
 use serenity::model::id::{ChannelId, MessageId, GuildId};
 use serenity::model::event::MessageUpdateEvent;
 
-use crate::message_db;
 use crate::message_db::message_db::MessageDb;
 
 pub struct Handler;
