@@ -11,7 +11,7 @@ pub mod message_db {
 	}
 
 	impl MessageDb {
-		pub fn from(message: Message) -> MessageDb {
+		pub fn from_message(message: Message) -> MessageDb {
 			let id = if let Some(guild_id) = message.guild_id {
 				Some(u64::from(guild_id))
 			} else {
