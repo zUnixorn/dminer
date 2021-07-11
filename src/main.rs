@@ -2,6 +2,7 @@ mod handler;
 mod user_db;
 mod activity_db;
 mod message_db;
+mod database_manager;
 
 use std::env;
 use tokio;

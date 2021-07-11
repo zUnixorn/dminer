@@ -7,6 +7,12 @@ struct UserDb {
 
 impl Display for UserDb {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{{ user_id: {}, username: {} }}", self.user_id, self.username)
+		write!(f, "{{ user_id: {}, username: {} }}", self.user_id,
+			   if let Some(name) = &self.username {
+				   name
+			   } else {
+				   "no name given"
+			   }
+		)
 	}
 }
