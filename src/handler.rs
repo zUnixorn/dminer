@@ -14,7 +14,7 @@ pub struct Handler;
 impl EventHandler for Handler {
 	async fn message(&self, _ctx: Context, message: Message) {
 		println!("Message by: {} with content: {}", message.author.name, message.content);
-		let msg = MessageDb::from(message);
+		let msg = MessageDb::from_message(message);
 	}
 
 	async fn message_delete(
