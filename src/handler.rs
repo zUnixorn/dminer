@@ -7,14 +7,22 @@ use serenity::model::id::{ChannelId, MessageId, GuildId};
 use serenity::model::event::MessageUpdateEvent;
 
 use crate::message_db::message_db::MessageDb;
+use crate::connection_pool::connection_pool::ConnectionPool;
 
 pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-	async fn message(&self, _ctx: Context, message: Message) {
+	async fn message(&self, ctx: Context, message: Message) {
 		println!("Message by: {} with content: {}", message.author.name, message.content);
 		let msg = MessageDb::from_message(message);
+		msg.write_to_db(ctx
+			.data
+			.read()
+			.await
+			.get::<ConnectionPool>()
+			.unwrap() //if it's not there the world is burning anyways
+		).await;
 	}
 
 	async fn message_delete(

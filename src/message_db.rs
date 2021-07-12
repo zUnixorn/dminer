@@ -1,36 +1,44 @@
 pub mod message_db {
 	use serenity::model::channel::Message;
 	use std::fmt::{Display, Formatter};
-	use sqlx::PgPool;
+	use sqlx::{PgPool, Executor};
 
 	pub struct MessageDb {
-		message_id: u64,
-		author: u64,
-		channel_id: u64,
-		guild_id: Option<u64>,
+		message_id: i64,
+		author: i64,
+		channel_id: i64,
+		guild_id: Option<i64>,
 		content: String,
-		deleted: bool
+		deleted: bool,
 	}
 
 	impl MessageDb {
 		pub fn from_message(message: Message) -> MessageDb {
-			let id = if let Some(guild_id) = message.guild_id {
-				Some(u64::from(guild_id))
-			} else {
-				Option::None
-			};
+			let id = message.guild_id.map(|guild_id| i64::from(guild_id));
 			MessageDb {
-				message_id: u64::from(message.id),
-				author: u64::from(message.author.id),
-				channel_id: message.channel_id.0,
+				message_id: i64::from(message.id),
+				author: i64::from(message.author.id),
+				channel_id: message.channel_id.0 as i64,
 				guild_id: id,
 				content: message.content,
-				deleted: false
+				deleted: false,
 			}
 		}
+
+		pub async fn write_to_db(&self, connection_pool: &PgPool) {
+			let query = sqlx::query(
+				"INSERT INTO messages (message_id, author, channel_id, guild_id, content, deleted)\
+					VALUES (?, ?, ?, ?, ?, ?)")
+				.bind(self.message_id)
+				.bind(self.author)
+				.bind(self.channel_id)
+				.bind(self.guild_id)
+				.bind(&self.content)
+				.bind(self.deleted);
+			let result = query.execute(connection_pool).await;
+			println!("binted")
+		}
 	}
-
-
 
 	impl Display for MessageDb {
 		fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

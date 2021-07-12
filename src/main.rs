@@ -10,7 +10,6 @@ use serenity::{
 	prelude::*,
 };
 use crate::handler::Handler;
-use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use connection_pool::connection_pool::ConnectionPool;
 
