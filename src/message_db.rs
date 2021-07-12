@@ -1,6 +1,6 @@
 use serenity::model::channel::Message;
 use std::fmt::{Display, Formatter};
-use sqlx::{PgPool, Executor};
+use sqlx::{PgPool};
 use serenity::model::user::User;
 use serenity::futures::executor::block_on;
 
