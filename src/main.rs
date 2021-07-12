@@ -1,5 +1,6 @@
 mod handler;
 mod user_db;
+mod activity_db;
 mod message_db;
 mod connection_pool;
 
