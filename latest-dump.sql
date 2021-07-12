@@ -8,7 +8,7 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'SQL_ASCII';
+SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
@@ -66,7 +66,8 @@ CREATE TABLE public.messages (
     channel_id bigint NOT NULL,
     guild_id bigint,
     content text,
-    author bigint
+    author bigint,
+    deleted boolean
 );
 
 
@@ -96,7 +97,7 @@ COPY public.activities (user_id, application_id, assets, details, kind, activity
 -- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: dminer
 --
 
-COPY public.messages (message_id, channel_id, guild_id, content, author) FROM stdin;
+COPY public.messages (message_id, channel_id, guild_id, content, author, deleted) FROM stdin;
 \.
 
 
