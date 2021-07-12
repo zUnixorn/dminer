@@ -30,7 +30,8 @@ async fn main() {
 			.await
 			.expect("Err creating client");
 
-	client.data.write().await.insert::<ConnectionPool>(connection_pool);
+	client.data.write().await
+		.insert::<ConnectionPool>(connection_pool);
 
 	if let Err(why) = client.start().await {
 		println!("Client error: {:?}", why);
