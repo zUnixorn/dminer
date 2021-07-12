@@ -2,7 +2,6 @@ pub mod activity_db {
 	use serenity::model::gateway::{ActivityType, Activity, ActivityAssets, ActivityTimestamps};
 	use serenity::model::id::ApplicationId;
 	use std::time::{SystemTime, UNIX_EPOCH};
-	use crate::database_manager::database_manager::DatabaseManger;
 
 
 	struct ActivityDb {
@@ -16,11 +15,10 @@ pub mod activity_db {
 		state: Option<String>,
 		start_timestamp: u64,
 		end_timestamp: Option<u64>,
-		db_manager: &'static DatabaseManger,
 	}
 
 	impl ActivityDb {
-		pub fn from_activity(activity: Activity, user_id: u64, db_manager: &'static DatabaseManger) -> Self {
+		pub fn from_activity(activity: Activity, user_id: u64) -> Self {
 			Self {
 				user_id,
 				application_id: Self::convert_application_id(&activity.application_id),
@@ -32,7 +30,6 @@ pub mod activity_db {
 				state: activity.state,
 				start_timestamp: Self::convert_timestamps(&activity.timestamps).0,
 				end_timestamp: Self::convert_timestamps(&activity.timestamps).1,
-				db_manager,
 			}
 		}
 
