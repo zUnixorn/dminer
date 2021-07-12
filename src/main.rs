@@ -20,9 +20,9 @@ async fn main() {
 	let connection_pool = PgPoolOptions::new()
 		.max_connections(5)
 		//.idle_timeout(600)
-		.connect("postgres://dminer:dminer@localhost/dminer_data")
+		.connect(&env::var("DATABASE_URL").expect("Database URL Environment Variable missing")[..])
 		.await
-		.expect("Error while connecting");
+		.expect("Error while connecting to database");
 
 	let mut client = Client::builder(&token)
 			.event_handler(Handler)
