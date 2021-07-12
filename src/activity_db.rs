@@ -47,44 +47,7 @@ pub mod activity_db {
 		}
 		*/
 
-		fn convert_application_id(id_wrapped: &Option<ApplicationId>) -> Option<u64> {
-			if let Some(id) = id_wrapped {
-				Some(id.0)
-			} else {
-				None
-			}
-		}
-
-		fn convert_asset(assets_wrapped: &Option<ActivityAssets>) -> Option<String> {
-			if let Some(assets) = assets_wrapped {
-				if let Some(asset) = assets.large_image.clone() {
-					Some(asset)
-				} else {
-					None
-				}
-			} else {
-				None
-			}
-		}
-
-		fn convert_timestamps(timestamps_wrapped: &Option<ActivityTimestamps>) -> (u64, Option<u64>) {
-			let now_timestamp = SystemTime::now()
-				.duration_since(UNIX_EPOCH)
-				.expect("system clock set before 01.01.1970")
-				.as_secs();
-
-			if let Some(timestamps) = timestamps_wrapped {
-				if let Some(start_timestamp) = timestamps.start {
-					(start_timestamp, timestamps.end)
-				} else {
-					(now_timestamp, timestamps.end)
-				}
-			} else {
-				(now_timestamp, None)
-			}
-		}
-
-		pub async fn write(&self, connection_pool: &PgPool) -> Result<(), sqlx::Error> {
+		pub async fn write_to_db(&self, connection_pool: &PgPool) -> Result<(), sqlx::Error> {
 			sqlx::query("INSERT INTO users (user_id, username) VALUES (?, NULL);")
 				.bind(self.user_id as i64)
 				.execute(connection_pool)
