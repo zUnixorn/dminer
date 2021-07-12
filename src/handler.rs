@@ -1,13 +1,12 @@
 use serenity::{
 	async_trait,
-	model::{gateway::Ready, event::PresenceUpdateEvent, channel::Message},
+	model::{gateway::Ready, channel::Message},
 	prelude::*,
 };
 use serenity::model::id::{ChannelId, MessageId, GuildId};
 use serenity::model::event::MessageUpdateEvent;
 
 use crate::message_db::MessageDb;
-use crate::activity_db::ActivityDb;
 use crate::connection_pool::ConnectionPool;
 
 pub struct Handler;
@@ -50,22 +49,6 @@ impl EventHandler for Handler {
 		_new: Option<Message>,
 		_event: MessageUpdateEvent
 	) {
-
-	}
-
-	async fn presence_update(
-		&self, _ctx: Context,
-		new_data: PresenceUpdateEvent
-	) {
-		let presence = new_data.presence;
-
-		let connection_pool = _ctx
-			.data
-			.read()
-			.await
-			.get::<ConnectionPool>()
-			.unwrap(); //if it's not there the world is burning anyways
-
 
 	}
 
