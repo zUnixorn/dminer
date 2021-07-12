@@ -8,7 +8,8 @@ pub mod message_db {
 		author: u64,
 		channel_id: u64,
 		guild_id: Option<u64>,
-		content: String
+		content: String,
+		deleted: bool
 	}
 
 	impl MessageDb {
@@ -23,14 +24,13 @@ pub mod message_db {
 				author: u64::from(message.author.id),
 				channel_id: message.channel_id.0,
 				guild_id: id,
-				content: message.content
+				content: message.content,
+				deleted: false
 			}
 		}
 	}
 
-	pub fn write_to_db(connection_pool: &PgPool) {
 
-	}
 
 	impl Display for MessageDb {
 		fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
