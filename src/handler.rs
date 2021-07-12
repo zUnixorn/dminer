@@ -6,8 +6,9 @@ use serenity::{
 use serenity::model::id::{ChannelId, MessageId, GuildId};
 use serenity::model::event::MessageUpdateEvent;
 
-use crate::message_db::message_db::MessageDb;
-use crate::connection_pool::connection_pool::ConnectionPool;
+use crate::message_db::MessageDb;
+use crate::activity_db::ActivityDb;
+use crate::connection_pool::ConnectionPool;
 
 pub struct Handler;
 
@@ -49,7 +50,16 @@ impl EventHandler for Handler {
 		&self, _ctx: Context,
 		new_data: PresenceUpdateEvent
 	) {
-		let _presence = new_data.presence;
+		let presence = new_data.presence;
+
+		let connection_pool = ctx
+			.data
+			.read()
+			.await
+			.get::<ConnectionPool>()
+			.unwrap(); //if it's not there the world is burning anyways
+
+
 	}
 
 	async fn ready(

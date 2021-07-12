@@ -1,10 +1,8 @@
-pub mod connection_pool {
-	use serenity::prelude::TypeMapKey;
-	use sqlx::{Pool, Postgres};
+use serenity::prelude::TypeMapKey;
+use sqlx::{Pool, Postgres};
 
-	pub struct ConnectionPool;
+pub struct ConnectionPool;
 
-	impl TypeMapKey for ConnectionPool {
-		type Value = Pool<Postgres>;
-	}
+impl TypeMapKey for ConnectionPool {
+	type Value = Pool<Postgres>;
 }

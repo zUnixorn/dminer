@@ -11,7 +11,7 @@ use serenity::{
 };
 use crate::handler::Handler;
 use sqlx::postgres::PgPoolOptions;
-use connection_pool::connection_pool::ConnectionPool;
+use connection_pool::ConnectionPool;
 
 
 #[tokio::main]
