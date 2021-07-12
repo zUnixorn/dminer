@@ -35,7 +35,7 @@ pub mod activity_db {
 				activity_name: activity.name,
 				party: activity.party.is_some(),
 				state: activity.state,
-				start_timestamp: activity.timestamps.map(|a| a.start).flatten()
+				start_timestamp: activity.timestamps.clone().map(|a| a.start).flatten()
 					.unwrap_or(now),
 				end_timestamp: activity.timestamps.map(|a| a.end).flatten(),
 			}
