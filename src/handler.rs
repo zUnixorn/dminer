@@ -47,10 +47,12 @@ impl EventHandler for Handler {
 		&self,
 		ctx: Context,
 		_old_if_available: Option<Message>,
-		_new: Option<Message>,
+		new: Option<Message>,
 		_event: MessageUpdateEvent
 	) {
+		if let Some(message) = new {
 
+		}
 	}
 
 	async fn presence_update(

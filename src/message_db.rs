@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use sqlx::{PgPool};
 use serenity::model::user::User;
 use serenity::futures::executor::block_on;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct MessageDb {
 	message_id: i64,
@@ -11,6 +12,7 @@ pub struct MessageDb {
 	guild_id: Option<i64>,
 	content: String,
 	deleted: bool,
+	timestamp: i64
 }
 
 impl MessageDb {
@@ -23,6 +25,10 @@ impl MessageDb {
 			guild_id: id,
 			content: message.content,
 			deleted: false,
+			timestamp: SystemTime::now()
+				.duration_since(UNIX_EPOCH)
+				.expect("Time got fucked")
+				.as_millis() as i64
 		}
 	}
 
@@ -33,14 +39,15 @@ impl MessageDb {
 			.bind(&self.author.name);
 
 		let query = sqlx::query(
-			"INSERT INTO messages (message_id, author, channel_id, guild_id, content, deleted)
-				VALUES ($1, $2, $3, $4, $5, $6)")
+			"INSERT INTO messages (message_id, author, channel_id, guild_id, content, deleted, timestamp)
+				VALUES ($1, $2, $3, $4, $5, $6, $7)")
 			.bind(self.message_id)
 			.bind(i64::from(self.author.id))
 			.bind(self.channel_id)
 			.bind(self.guild_id)
 			.bind(&self.content)
-			.bind(self.deleted);
+			.bind(self.deleted)
+			.bind(self.timestamp);
 		let result2 = block_on(user_insert_query.execute(connection_pool));
 		let result = query.execute(connection_pool).await;
 
@@ -65,6 +72,10 @@ impl MessageDb {
 			Ok(_) => println!("No error"),
 			Err(e) => println!("Error: {}", e)
 		}
+	}
+
+	pub async fn update_message(message: MessageDb) {
+
 	}
 }
 
