@@ -45,7 +45,7 @@ impl EventHandler for Handler {
 
 	async fn message_update(
 		&self,
-		_ctx: Context,
+		ctx: Context,
 		_old_if_available: Option<Message>,
 		_new: Option<Message>,
 		_event: MessageUpdateEvent
@@ -54,12 +54,14 @@ impl EventHandler for Handler {
 	}
 
 	async fn presence_update(
-		&self, _ctx: Context,
+		&self, ctx: Context,
 		new_data: PresenceUpdateEvent
 	) {
+		println!("Presence update from: {}", new_data.presence.user.as_ref().unwrap().name);
+
 		let presence = new_data.presence;
 
-		let connection_pool = _ctx
+		let connection_pool = ctx
 			.data
 			.read()
 			.await
