@@ -2,6 +2,7 @@ mod handler;
 mod user_db;
 mod activity_db;
 mod message_db;
+mod connection_pool;
 
 use std::env;
 use tokio;
@@ -11,6 +12,7 @@ use serenity::{
 use crate::handler::Handler;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
+use connection_pool::connection_pool::ConnectionPool;
 
 
 #[tokio::main]
@@ -28,6 +30,8 @@ async fn main() {
 			.event_handler(Handler)
 			.await
 			.expect("Err creating client");
+
+	client.data.write().await.insert::<ConnectionPool>(connection_pool);
 
 	if let Err(why) = client.start().await {
 		println!("Client error: {:?}", why);
