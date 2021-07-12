@@ -1,6 +1,7 @@
 pub mod message_db {
 	use serenity::model::channel::Message;
 	use std::fmt::{Display, Formatter};
+	use sqlx::PgPool;
 
 	pub struct MessageDb {
 		message_id: u64,
@@ -25,6 +26,10 @@ pub mod message_db {
 				content: message.content
 			}
 		}
+	}
+
+	pub fn write_to_db(connection_pool: &PgPool) {
+
 	}
 
 	impl Display for MessageDb {
