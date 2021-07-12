@@ -52,7 +52,7 @@ impl EventHandler for Handler {
 	) {
 		let presence = new_data.presence;
 
-		let connection_pool = ctx
+		let connection_pool = _ctx
 			.data
 			.read()
 			.await
