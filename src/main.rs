@@ -11,10 +11,12 @@ use serenity::{
 use crate::handler::Handler;
 use sqlx::postgres::PgPoolOptions;
 use connection_pool::ConnectionPool;
-
+use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() {
+	dotenv().ok();
+
 	let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
 	let connection_pool = PgPoolOptions::new()

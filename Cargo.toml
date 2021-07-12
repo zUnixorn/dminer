@@ -10,6 +10,7 @@ authors = ["flamion <flamion@protonmail.com>", "zUnixorn"]
 sqlx = { version = "0.5.5", features = [ "runtime-tokio-native-tls", "postgres", "chrono", "macros", "sqlx-macros" ] }
 tokio = { version = "1.8.1", features = ["full"] }
 toml = "0.5.8"
+dotenv = "0.15.0"
 
 [dependencies.serenity]
 default-features = false
