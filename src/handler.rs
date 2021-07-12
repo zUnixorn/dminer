@@ -49,6 +49,6 @@ impl EventHandler for Handler {
 		_ctx: Context,
 		data_about_bot: Ready
 	) {
-		println!("{} is connected!", data_about_bot.user.name);
+		println!("{} está aqui!", data_about_bot.user.name);
 	}
 }
