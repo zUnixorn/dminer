@@ -53,6 +53,19 @@ impl MessageDb {
 			Err(e) => println!("Error: {}", e)
 		}
 	}
+
+	pub async fn mark_deleted(message_id: i64, connection_pool: &PgPool) {
+		let mark_deleted_query = sqlx::query(
+			"UPDATE messages SET deleted = true WHERE message_id = $1")
+			.bind(message_id);
+
+		let result = mark_deleted_query.execute(connection_pool).await;
+
+		match result {
+			Ok(_) => println!("No error"),
+			Err(e) => println!("Error: {}", e)
+		}
+	}
 }
 
 impl Display for MessageDb {

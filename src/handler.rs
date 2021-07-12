@@ -28,12 +28,19 @@ impl EventHandler for Handler {
 
 	async fn message_delete(
 		&self,
-		_ctx: Context,
+		ctx: Context,
 		_channel_id: ChannelId,
-		_deleted_message_id: MessageId,
+		deleted_message_id: MessageId,
 		_guild_id: Option<GuildId>
 	) {
-		println!("Message with id {} was deleted", _deleted_message_id)
+		println!("Message with id {} was deleted", deleted_message_id);
+		MessageDb::mark_deleted(i64::from(deleted_message_id),
+								ctx
+									.data
+									.read()
+									.await
+									.get::<ConnectionPool>()
+									.unwrap()).await;
 	}
 
 	async fn message_update(
