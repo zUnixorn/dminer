@@ -1,9 +1,10 @@
-use serenity::model::channel::Message;
 use std::fmt::{Display, Formatter};
-use sqlx::{PgPool};
-use serenity::model::user::User;
-use serenity::futures::executor::block_on;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use serenity::futures::executor::block_on;
+use serenity::model::channel::Message;
+use serenity::model::user::User;
+use sqlx::PgPool;
 
 pub struct MessageDb {
 	message_id: i64,
@@ -12,7 +13,7 @@ pub struct MessageDb {
 	guild_id: Option<i64>,
 	content: String,
 	deleted: bool,
-	timestamp: i64
+	timestamp: i64,
 }
 
 impl MessageDb {
@@ -28,12 +29,12 @@ impl MessageDb {
 			timestamp: SystemTime::now()
 				.duration_since(UNIX_EPOCH)
 				.expect("Time got fucked")
-				.as_millis() as i64
+				.as_millis() as i64,
 		}
 	}
 
 	pub async fn write_to_db(&self, connection_pool: &PgPool) {
-		let user_insert_query = sqlx::query (
+		let user_insert_query = sqlx::query(
 			"INSERT INTO users VALUES ($1, $2) ON CONFLICT DO NOTHING")
 			.bind(i64::from(self.author.id))
 			.bind(&self.author.name);
@@ -74,8 +75,23 @@ impl MessageDb {
 		}
 	}
 
-	pub async fn update_message(message: MessageDb) {
+	pub async fn update_message(message_id: &i64, new_content: &String, connection_pool: &PgPool) {
+		let insert_update_query = sqlx::query(
+			"INSERT INTO updated_messages (message_id, new_content, modify_timestamp)
+				 VALUES ($1, $2, $3)")
+			.bind(message_id)
+			.bind(new_content)
+			.bind(SystemTime::now()
+					.duration_since(UNIX_EPOCH)
+					.expect("Time got fucked")
+					.as_millis() as i64
+			);
 
+		let result = insert_update_query.execute(connection_pool).await;
+
+		if let Err(why) = result {
+			println!("Error: {:?}", why)
+		}
 	}
 }
 

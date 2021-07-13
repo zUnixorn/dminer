@@ -1,14 +1,13 @@
 use serenity::{
 	async_trait,
-	model::{gateway::Ready, event::PresenceUpdateEvent, channel::Message},
+	model::{channel::Message, event::PresenceUpdateEvent, gateway::Ready},
 	prelude::*,
 };
-use serenity::model::id::{ChannelId, MessageId, GuildId};
 use serenity::model::event::MessageUpdateEvent;
+use serenity::model::id::{ChannelId, GuildId, MessageId};
 
-use crate::message_db::MessageDb;
-use crate::activity_db::ActivityDb;
 use crate::connection_pool::ConnectionPool;
+use crate::message_db::MessageDb;
 
 pub struct Handler;
 
@@ -40,7 +39,8 @@ impl EventHandler for Handler {
 									.read()
 									.await
 									.get::<ConnectionPool>()
-									.unwrap()).await;
+									.unwrap(),
+		).await;
 	}
 
 	async fn message_delete_bulk(
@@ -50,7 +50,6 @@ impl EventHandler for Handler {
 		multiple_deleted_messages_ids: Vec<MessageId>,
 		_guild_id: Option<GuildId>,
 	) {
-
 		println!("Bulk delete incoming:\n{:?}", multiple_deleted_messages_ids);
 
 		for deleted_message_id in multiple_deleted_messages_ids {
@@ -71,10 +70,23 @@ impl EventHandler for Handler {
 		&self,
 		ctx: Context,
 		_old_if_available: Option<Message>,
-		new: Option<Message>,
+		_new: Option<Message>,
 		_event: MessageUpdateEvent,
 	) {
-		if let Some(message) = new {}
+		//Can't use the new Message Object, in testing it has been absent every time.
+		if let Some(content) = _event.content {
+			let message_id = i64::from(_event.id);
+			MessageDb::update_message(&message_id, &content, ctx
+				.data
+				.read()
+				.await
+				.get::<ConnectionPool>()
+				.unwrap(),
+			).await;
+			println!("Message with id {} got updated. New Content: {}", &message_id, &content)
+		} else {
+			println!("Content from modified message absent")
+		}
 	}
 
 	async fn presence_update(
