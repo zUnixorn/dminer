@@ -47,6 +47,7 @@ mod connection_pool;
 mod commands;
 
 use commands::{meta::*};
+use serenity::client::bridge::gateway::GatewayIntents;
 
 struct ShardManagerContainer;
 
@@ -237,6 +238,7 @@ async fn main() {
 	let mut client = Client::builder(&token)
 		.event_handler(Handler)
 		.framework(framework)
+		.intents(GatewayIntents::all()) //change to only require the intents we actually want
 		.await
 		.expect("Err creating client");
 
