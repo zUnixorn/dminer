@@ -3,6 +3,7 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::client::bridge::gateway::ShardId;
 use crate::ShardManagerContainer;
+use std::time::Duration;
 
 #[command]
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
@@ -41,7 +42,7 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 		},
 	};
 
-	msg.reply(ctx, &format!("The shard latency is {:?}", runner.latency)).await?;
+	msg.reply(ctx, &format!("The shard latency is {:?}", runner.latency.unwrap_or(Duration::from_secs(u64::MAX)))).await?;
 
 	Ok(())
 }
