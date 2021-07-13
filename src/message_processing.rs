@@ -1,43 +1,25 @@
-use std::env;
-
-use dotenv::dotenv;
-use serenity::{
-	prelude::*,
-};
-use sqlx::postgres::PgPoolOptions;
-use tokio;
-
-use crate::handler::Handler;
 use std::collections::HashSet;
 
 use serenity::{
-	async_trait,
-	client::bridge::gateway::{ShardId, ShardManager},
+	prelude::*,
+};
+use serenity::{
 	framework::standard::{
-		buckets::{LimitedFor, RevertBucket},
-		help_commands,
-		macros::{check, command, group, help, hook},
 		Args,
 		CommandGroup,
-		CommandOptions,
 		CommandResult,
 		DispatchError,
+		help_commands,
 		HelpOptions,
-		Reason,
-		StandardFramework,
+		macros::{group, help, hook},
 	},
-	http::Http,
 	model::{
-		channel::{Channel, Message},
-		gateway::Ready,
+		channel::Message,
 		id::UserId,
-		permissions::Permissions,
 	},
-	utils::{content_safe, ContentSafeOptions},
 };
-use std::sync::Arc;
-use crate::commands::meta::*;
 
+use crate::commands::meta::*;
 
 #[group]
 #[commands(ping, latency)]
@@ -87,7 +69,7 @@ pub async fn my_help(
 }
 
 #[hook]
-pub async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
+pub async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
 	println!("Got command '{}' by user '{}'", command_name, msg.author.name);
 
 	true // if `before` returns false, command processing doesn't happen.

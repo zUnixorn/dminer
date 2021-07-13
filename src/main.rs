@@ -13,29 +13,12 @@ use crate::handler::Handler;
 use std::collections::HashSet;
 
 use serenity::{
-	async_trait,
-	client::bridge::gateway::{ShardId, ShardManager},
+	client::bridge::gateway::{ShardManager},
 	framework::standard::{
-		buckets::{LimitedFor, RevertBucket},
-		help_commands,
-		macros::{check, command, group, help, hook},
-		Args,
-		CommandGroup,
-		CommandOptions,
-		CommandResult,
-		DispatchError,
-		HelpOptions,
-		Reason,
+		buckets::{LimitedFor},
 		StandardFramework,
 	},
 	http::Http,
-	model::{
-		channel::{Channel, Message},
-		gateway::Ready,
-		id::UserId,
-		permissions::Permissions,
-	},
-	utils::{content_safe, ContentSafeOptions},
 };
 use std::sync::Arc;
 
@@ -47,7 +30,6 @@ mod connection_pool;
 mod commands;
 mod message_processing;
 
-use commands::{meta::*};
 use message_processing::*;
 use serenity::client::bridge::gateway::GatewayIntents;
 
