@@ -47,7 +47,7 @@ impl ActivityDb {
 	*/
 
 	pub async fn write_to_db(&self, connection_pool: &PgPool) -> Result<(), sqlx::Error> {
-		sqlx::query("INSERT INTO users (user_id, username) VALUES (?, NULL);")
+		sqlx::query("INSERT INTO users (user_id, username) VALUES ($1, NULL);")
 			.bind(self.user_id as i64)
 			.execute(connection_pool)
 			.await?;
