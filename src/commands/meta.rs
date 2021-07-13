@@ -1,9 +1,11 @@
+use std::time::Duration;
+
+use serenity::client::bridge::gateway::ShardId;
 use serenity::framework::standard::{CommandResult, macros::command};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
-use serenity::client::bridge::gateway::ShardId;
+
 use crate::ShardManagerContainer;
-use std::time::Duration;
 
 #[command]
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
@@ -24,7 +26,7 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 			msg.reply(ctx, "There was a problem getting the shard manager").await?;
 
 			return Ok(());
-		},
+		}
 	};
 
 	let manager = shard_manager.lock().await;
@@ -39,7 +41,7 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 			msg.reply(ctx, "No shard found").await?;
 
 			return Ok(());
-		},
+		}
 	};
 
 	msg.reply(ctx, &format!("The shard latency is {:?}", runner.latency.unwrap_or(Duration::from_secs(u64::MAX)))).await?;
