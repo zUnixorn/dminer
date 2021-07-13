@@ -71,11 +71,11 @@ impl EventHandler for Handler {
 		ctx: Context,
 		_old_if_available: Option<Message>,
 		_new: Option<Message>,
-		_event: MessageUpdateEvent,
+		event: MessageUpdateEvent,
 	) {
 		//Can't use the new Message Object, in testing it has been absent every time.
-		if let Some(content) = _event.content {
-			let message_id = i64::from(_event.id);
+		if let Some(content) = event.content {
+			let message_id = i64::from(event.id);
 			MessageDb::update_message(&message_id, &content, ctx
 				.data
 				.read()
