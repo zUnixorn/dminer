@@ -1,21 +1,21 @@
-use std::env;
-
-use dotenv::dotenv;
-use serenity::{
-	prelude::*,
-};
-use sqlx::postgres::PgPoolOptions;
-use tokio;
-
-use connection_pool::ConnectionPool;
-
-use crate::handler::Handler;
-
 mod handler;
 mod user_db;
 mod activity_db;
 mod message_db;
 mod connection_pool;
+
+use std::env;
+use tokio;
+use serenity::{
+	prelude::*,
+};
+use crate::handler::Handler;
+use sqlx::postgres::PgPoolOptions;
+use tokio;
+
+use connection_pool::ConnectionPool;
+use serenity::client::bridge::gateway::GatewayIntents;
+use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() {
@@ -32,6 +32,7 @@ async fn main() {
 
 	let mut client = Client::builder(&token)
 		.event_handler(Handler)
+		.intents(GatewayIntents::GUILD_PRESENCES)
 		.await
 		.expect("Err creating client");
 

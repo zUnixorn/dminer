@@ -3,11 +3,12 @@ use serenity::{
 	model::{channel::Message, event::PresenceUpdateEvent, gateway::Ready},
 	prelude::*,
 };
+use serenity::model::id::{ChannelId, MessageId, GuildId};
 use serenity::model::event::MessageUpdateEvent;
-use serenity::model::id::{ChannelId, GuildId, MessageId};
 
-use crate::connection_pool::ConnectionPool;
 use crate::message_db::MessageDb;
+use crate::activity_db::ActivityDb;
+use crate::connection_pool::ConnectionPool;
 
 pub struct Handler;
 
@@ -93,8 +94,6 @@ impl EventHandler for Handler {
 		&self, ctx: Context,
 		new_data: PresenceUpdateEvent,
 	) {
-		println!("Presence update from: {}", new_data.presence.user.as_ref().unwrap().name);
-
 		let presence = new_data.presence;
 
 		let connection_pool = ctx
@@ -103,6 +102,17 @@ impl EventHandler for Handler {
 			.await
 			.get::<ConnectionPool>()
 			.unwrap(); //if it's not there the world is burning anyways
+		ActivityDb::from_activity(
+			presence.activities.first().unwrap().clone(),
+			u64::from(presence.user_id)
+		).write_to_db(
+			ctx
+				.data
+				.read()
+				.await
+				.get::<ConnectionPool>()
+				.unwrap()
+		);
 	}
 
 	async fn ready(
