@@ -1,18 +1,21 @@
+use std::env;
+
+use dotenv::dotenv;
+use serenity::{
+	prelude::*,
+};
+use sqlx::postgres::PgPoolOptions;
+use tokio;
+
+use connection_pool::ConnectionPool;
+
+use crate::handler::Handler;
+
 mod handler;
 mod user_db;
 mod activity_db;
 mod message_db;
 mod connection_pool;
-
-use std::env;
-use tokio;
-use serenity::{
-	prelude::*,
-};
-use crate::handler::Handler;
-use sqlx::postgres::PgPoolOptions;
-use connection_pool::ConnectionPool;
-use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() {
@@ -28,9 +31,9 @@ async fn main() {
 		.expect("Error while connecting to database");
 
 	let mut client = Client::builder(&token)
-			.event_handler(Handler)
-			.await
-			.expect("Err creating client");
+		.event_handler(Handler)
+		.await
+		.expect("Err creating client");
 
 	client.data.write().await
 		.insert::<ConnectionPool>(connection_pool);
