@@ -5,6 +5,7 @@ use serenity::futures::executor::block_on;
 use serenity::model::channel::Message;
 use serenity::model::user::User;
 use sqlx::PgPool;
+use crate::user_db::UserDb;
 
 pub struct MessageDb {
 	message_id: i64,
@@ -33,12 +34,7 @@ impl MessageDb {
 		}
 	}
 
-	pub async fn write_to_db(&self, connection_pool: &PgPool) {
-		let user_insert_query = sqlx::query(
-			"INSERT INTO users VALUES ($1, $2) ON CONFLICT DO NOTHING")
-			.bind(i64::from(self.author.id))
-			.bind(&self.author.name);
-
+	pub async fn write_to_db(&self, connection_pool: &PgPool) -> Result<(), sqlx::Error> {
 		let query = sqlx::query(
 			"INSERT INTO messages (message_id, author, channel_id, guild_id, content, deleted, timestamp)
 				VALUES ($1, $2, $3, $4, $5, $6, $7)")
@@ -49,48 +45,40 @@ impl MessageDb {
 			.bind(&self.content)
 			.bind(self.deleted)
 			.bind(self.timestamp);
-		let result = block_on(user_insert_query.execute(connection_pool));
-		let result2 = query.execute(connection_pool).await;
 
-		if let Err(why) = result {
-			println!("Error while inserting user: {:?}", why)
-		}
+		let user = UserDb::from_user(self.author.clone());
 
-		if let Err(why) = result2 {
-			println!("Error while Inserting message: {:?}", why)
-		}
+		block_on(user.write_to_db(connection_pool))?;
+		query.execute(connection_pool).await?;
+
+		Ok(())
 	}
 
-	pub async fn mark_deleted(message_id: i64, connection_pool: &PgPool) {
+	pub async fn mark_deleted(message_id: i64, connection_pool: &PgPool) -> Result<(), sqlx::Error> {
 		let mark_deleted_query = sqlx::query(
 			"UPDATE messages SET deleted = true WHERE message_id = $1")
 			.bind(message_id);
 
-		let result = mark_deleted_query.execute(connection_pool).await;
+		mark_deleted_query.execute(connection_pool).await?;
 
-		match result {
-			Ok(_) => println!("No error"),
-			Err(e) => println!("Error: {}", e)
-		}
+		Ok(())
 	}
 
-	pub async fn update_message(message_id: &i64, new_content: &String, connection_pool: &PgPool) {
+	pub async fn update_message(message_id: &i64, new_content: &String, connection_pool: &PgPool) -> Result<(), sqlx::Error> {
 		let insert_update_query = sqlx::query(
 			"INSERT INTO updated_messages (message_id, new_content, modify_timestamp)
 				 VALUES ($1, $2, $3)")
 			.bind(message_id)
 			.bind(new_content)
 			.bind(SystemTime::now()
-					.duration_since(UNIX_EPOCH)
-					.expect("Time got fucked")
-					.as_millis() as i64
+				.duration_since(UNIX_EPOCH)
+				.expect("Time got fucked")
+				.as_millis() as i64
 			);
 
-		let result = insert_update_query.execute(connection_pool).await;
+		insert_update_query.execute(connection_pool).await?;
 
-		if let Err(why) = result {
-			println!("Error: {:?}", why)
-		}
+		Ok(())
 	}
 }
 
