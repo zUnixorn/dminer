@@ -3,12 +3,12 @@ use serenity::{
 	model::{channel::Message, event::PresenceUpdateEvent, gateway::Ready},
 	prelude::*,
 };
-use serenity::model::id::{ChannelId, MessageId, GuildId};
 use serenity::model::event::MessageUpdateEvent;
+use serenity::model::id::{ChannelId, GuildId, MessageId};
 
-use crate::message_db::MessageDb;
 use crate::activity_db::ActivityDb;
 use crate::connection_pool::ConnectionPool;
+use crate::message_db::MessageDb;
 use crate::user_db::UserDb;
 
 pub struct Handler;
@@ -18,13 +18,17 @@ impl EventHandler for Handler {
 	async fn message(&self, ctx: Context, message: Message) {
 		println!("Message by: {} with content: {}", message.author.name, message.content);
 		let msg = MessageDb::from_message(message);
-		msg.write_to_db(ctx
-							.data
-							.read()
-							.await
-							.get::<ConnectionPool>()
-							.unwrap() //if it's not there the world is burning anyways
+		let result = msg.write_to_db(ctx
+										 .data
+										 .read()
+										 .await
+										 .get::<ConnectionPool>()
+										 .unwrap() //if it's not there the world is burning anyways
 		).await;
+
+		if let Err(why) = result {
+			println!("Error writing message to DB: {:?}", why)
+		}
 	}
 
 	async fn message_delete(
@@ -35,14 +39,18 @@ impl EventHandler for Handler {
 		_guild_id: Option<GuildId>,
 	) {
 		println!("Message with id {} was deleted", deleted_message_id);
-		MessageDb::mark_deleted(i64::from(deleted_message_id),
-								ctx
-									.data
-									.read()
-									.await
-									.get::<ConnectionPool>()
-									.unwrap(),
+		let result = MessageDb::mark_deleted(i64::from(deleted_message_id),
+											 ctx
+												 .data
+												 .read()
+												 .await
+												 .get::<ConnectionPool>()
+												 .unwrap(),
 		).await;
+
+		if let Err(why) = result {
+			println!("Error writing message to DB: {:?}", why)
+		}
 	}
 
 	async fn message_delete_bulk(
@@ -56,7 +64,7 @@ impl EventHandler for Handler {
 
 		for deleted_message_id in multiple_deleted_messages_ids {
 			println!("Message with id {} was deleted", deleted_message_id);
-			MessageDb::mark_deleted(
+			let result = MessageDb::mark_deleted(
 				i64::from(deleted_message_id),
 				ctx
 					.data
@@ -65,6 +73,10 @@ impl EventHandler for Handler {
 					.get::<ConnectionPool>()
 					.unwrap(),
 			).await;
+
+			if let Err(why) = result {
+				println!("Error writing message to DB: {:?}", why)
+			}
 		}
 	}
 
@@ -78,7 +90,7 @@ impl EventHandler for Handler {
 		//Can't use the new Message Object, in testing it has been absent every time.
 		if let Some(content) = event.content {
 			let message_id = i64::from(event.id);
-			MessageDb::update_message(&message_id, &content, ctx
+			let result = MessageDb::update_message(&message_id, &content, ctx
 				.data
 				.read()
 				.await
@@ -86,6 +98,10 @@ impl EventHandler for Handler {
 				.unwrap(),
 			).await;
 			println!("Message with id {} got updated. New Content: {}", &message_id, &content)
+
+			if let Err(why) = result {
+				println!("Error writing message to DB: {:?}", why)
+			}
 		} else {
 			println!("Content from modified message absent")
 		}
@@ -122,7 +138,7 @@ impl EventHandler for Handler {
 					.await
 					.get::<ConnectionPool>()
 					.unwrap()
-			).await;
+				).await;
 		}
 	}
 
