@@ -19,10 +19,11 @@ use serenity::{
 	},
 };
 
+use crate::commands::hate::*;
 use crate::commands::meta::*;
 
 #[group]
-#[commands(ping, latency)]
+#[commands(ping, latency, hate)]
 pub struct General;
 
 

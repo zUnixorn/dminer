@@ -34,7 +34,9 @@ mod activity_kind;
 
 use message_processing::*;
 use help::*;
+use commands::*;
 use serenity::client::bridge::gateway::GatewayIntents;
+use crate::commands::hate::HateMessageTypeMap;
 
 
 struct ShardManagerContainer;
@@ -79,7 +81,7 @@ async fn main() {
 		Err(why) => panic!("Could not access application info: {:?}", why),
 	};
 
-	let prefix = env::var("PREFIX").unwrap();
+	let prefix = env::var("PREFIX").expect("Prefix not found in environment");
 
 	let framework = StandardFramework::new()
 		.configure(|c| c
@@ -148,8 +150,10 @@ async fn main() {
 
 	{
 		let mut data = client.data.write().await;
+		let hate_messages = hate::load_hate_messages("./hate.json").await;
 		data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
 		data.insert::<ConnectionPool>(connection_pool);
+		data.insert::<HateMessageTypeMap>(hate_messages);
 	}
 
 	if let Err(why) = client.start().await {

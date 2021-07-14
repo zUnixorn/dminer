@@ -8,13 +8,15 @@ use serenity::prelude::*;
 use crate::ShardManagerContainer;
 
 #[command]
-async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
+#[description("Replies with \"Pong!\"")]
+pub async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 	msg.channel_id.say(&ctx.http, "Pong!").await?;
 
 	Ok(())
 }
 
 #[command]
+#[description("Replies with the current latency the bot has to discord.\nMay not be 100% accurate or up to date")]
 async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 	// The shard manager is an interface for mutating, stopping, restarting, and
 	// retrieving information about shards.
