@@ -3,20 +3,20 @@ use serenity::model::user::User;
 use serenity::model::gateway::Presence;
 use sqlx::PgPool;
 
-struct UserDb {
+pub struct UserDb {
 	user_id: i64,
 	username: Option<String>,
 }
 
 impl UserDb {
-	fn from_user(user: User) -> Self {
+	pub fn from_user(user: User) -> Self {
 		Self {
 			user_id: i64::from(user.id),
 			username: Some(user.name),
 		}
 	}
 
-	fn from_presence(presence: Presence) -> Self {
+	pub fn from_presence(presence: Presence) -> Self {
 		Self {
 			user_id: i64::from(presence.user_id),
 			username: presence.user.map(|o| o.name),
