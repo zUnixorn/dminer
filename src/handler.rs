@@ -96,13 +96,7 @@ impl EventHandler for Handler {
 	) {
 		let presence = new_data.presence;
 
-		let connection_pool = ctx
-			.data
-			.read()
-			.await
-			.get::<ConnectionPool>()
-			.unwrap(); //if it's not there the world is burning anyways
-		ActivityDb::from_activity(
+		/*ActivityDb::from_activity(
 			presence.activities.first().unwrap().clone(),
 			u64::from(presence.user_id)
 		).write_to_db(
@@ -112,7 +106,26 @@ impl EventHandler for Handler {
 				.await
 				.get::<ConnectionPool>()
 				.unwrap()
-		);
+		);*/
+
+		for activity in presence.activities {
+			println!("activity: {}, from user: {}{}",
+					 activity.name,
+					 presence.user_id,
+					 presence.user
+						 .clone()
+						 .map(|o| format!(" ({})", o.name))
+						 .unwrap_or(String::new()));
+
+			let activity_entry = ActivityDb::from_activity(activity, u64::from(presence.user_id));
+			activity_entry.write_to_db(ctx
+				.data
+				.read()
+				.await
+				.get::<ConnectionPool>()
+				.unwrap()
+			);
+		}
 	}
 
 	async fn ready(
