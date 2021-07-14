@@ -43,8 +43,15 @@ pub async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_r
 }
 
 #[hook]
-pub async fn unknown_command(_ctx: &Context, msg: &Message, unknown_command_name: &str) {
+pub async fn unknown_command(ctx: &Context, msg: &Message, unknown_command_name: &str) {
 	println!("Could not find command named '{}'\n(Message content: \"{}\")", unknown_command_name, msg.content);
+	let reply = msg.channel_id.say(&ctx.http,
+					   format!("Sorry, couldn't find a command named '`{}`'\n\n With the `help` command you can list all available commands", unknown_command_name)
+	).await;
+
+	if let Err(why) = reply {
+		println!("Error replying to unknown command: {:?}", why)
+	}
 }
 
 #[hook]
