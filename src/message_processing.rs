@@ -28,7 +28,7 @@ pub struct General;
 
 #[hook]
 pub async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
-	println!("Got command '{}' by user '{}'", command_name, msg.author.name);
+	println!("Got message '{}' by user '{}'", command_name, msg.author.name);
 
 	true // if `before` returns false, command processing doesn't happen.
 }
