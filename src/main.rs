@@ -53,7 +53,9 @@ async fn main() {
 		.await
 		.expect("Error while connecting to database");
 
+
 	let http = Http::new_with_token(&token);
+
 
 	let (owners, bot_id) = match http.get_current_application_info().await {
 		Ok(info) => {
@@ -71,18 +73,21 @@ async fn main() {
 		Err(why) => panic!("Could not access application info: {:?}", why),
 	};
 
+	let prefix = env::var("PREFIX").unwrap();
+
 	let framework = StandardFramework::new()
 		.configure(|c| c
 			.with_whitespace(true)
 			.on_mention(Some(bot_id))
-			.prefix("~")
+			.prefix(&prefix)
 			// In this case, if "," would be first, a message would never
 			// be delimited at ", ", forcing you to trim your arguments if you
 			// want to avoid whitespaces at the start of each.
 			.delimiters(vec![", ", ",", " "])
 			// Sets the bot's owners. These will be used for commands that
 			// are owners only.
-			.owners(owners))
+			.owners(owners)
+		)
 
 		// Set a function to be called prior to each command execution. This
 		// provides the context of the command, the message that was received,
