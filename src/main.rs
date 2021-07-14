@@ -30,6 +30,7 @@ mod connection_pool;
 mod commands;
 mod message_processing;
 mod help;
+mod activity_kind;
 
 use message_processing::*;
 use help::*;
