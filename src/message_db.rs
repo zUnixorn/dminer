@@ -49,16 +49,15 @@ impl MessageDb {
 			.bind(&self.content)
 			.bind(self.deleted)
 			.bind(self.timestamp);
-		let result2 = block_on(user_insert_query.execute(connection_pool));
-		let result = query.execute(connection_pool).await;
+		let result = block_on(user_insert_query.execute(connection_pool));
+		let result2 = query.execute(connection_pool).await;
 
-		match result {
-			Ok(_) => println!("No error"),
-			Err(e) => println!("Error: {}", e)
+		if let Err(why) = result {
+			println!("Error while inserting user: {:?}", why)
 		}
-		match result2 {
-			Ok(_) => println!("No error"),
-			Err(e) => println!("Error: {}", e)
+
+		if let Err(why) = result2 {
+			println!("Error while Inserting message: {:?}", why)
 		}
 	}
 
