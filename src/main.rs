@@ -29,15 +29,20 @@ mod message_db;
 mod connection_pool;
 mod commands;
 mod message_processing;
+mod help;
 
 use message_processing::*;
+use help::*;
 use serenity::client::bridge::gateway::GatewayIntents;
+
 
 struct ShardManagerContainer;
 
 impl TypeMapKey for ShardManagerContainer {
 	type Value = Arc<Mutex<ShardManager>>;
 }
+
+
 
 #[tokio::main]
 async fn main() {
