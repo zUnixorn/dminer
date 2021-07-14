@@ -97,7 +97,7 @@ impl EventHandler for Handler {
 				.get::<ConnectionPool>()
 				.unwrap(),
 			).await;
-			println!("Message with id {} got updated. New Content: {}", &message_id, &content)
+			println!("Message with id {} got updated. New Content: {}", &message_id, &content);
 
 			if let Err(why) = result {
 				println!("Error writing message to DB: {:?}", why)
