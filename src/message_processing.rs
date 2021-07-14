@@ -1,21 +1,16 @@
-use std::collections::HashSet;
+//use std::collections::HashSet;
 
 use serenity::{
 	prelude::*,
 };
 use serenity::{
 	framework::standard::{
-		Args,
-		CommandGroup,
 		CommandResult,
 		DispatchError,
-		help_commands,
-		HelpOptions,
-		macros::{group, help, hook},
+		macros::{group, hook},
 	},
 	model::{
 		channel::Message,
-		id::UserId,
 	},
 };
 

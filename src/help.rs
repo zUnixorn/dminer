@@ -8,18 +8,15 @@ use serenity::{
 		Args,
 		CommandGroup,
 		CommandResult,
-		DispatchError,
 		help_commands,
 		HelpOptions,
-		macros::{group, help, hook},
+		macros::{help},
 	},
 	model::{
 		channel::Message,
 		id::UserId,
 	},
 };
-
-use crate::commands::meta::*;
 
 // The framework provides two built-in help commands for you to use.
 // But you can also make your own customized help command that forwards
