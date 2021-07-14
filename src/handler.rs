@@ -9,6 +9,7 @@ use serenity::model::event::MessageUpdateEvent;
 use crate::message_db::MessageDb;
 use crate::activity_db::ActivityDb;
 use crate::connection_pool::ConnectionPool;
+use crate::user_db::UserDb;
 
 pub struct Handler;
 
@@ -96,17 +97,14 @@ impl EventHandler for Handler {
 	) {
 		let presence = new_data.presence;
 
-		/*ActivityDb::from_activity(
-			presence.activities.first().unwrap().clone(),
-			u64::from(presence.user_id)
-		).write_to_db(
-			ctx
+		UserDb::from_presence(presence.clone())
+			.write_to_db(ctx
 				.data
 				.read()
 				.await
 				.get::<ConnectionPool>()
 				.unwrap()
-		);*/
+			).await;
 
 		for activity in presence.activities {
 			println!("activity: {}, from user: {}{}",
@@ -117,14 +115,14 @@ impl EventHandler for Handler {
 						 .map(|o| format!(" ({})", o.name))
 						 .unwrap_or(String::new()));
 
-			let activity_entry = ActivityDb::from_activity(activity, u64::from(presence.user_id));
-			activity_entry.write_to_db(ctx
-				.data
-				.read()
-				.await
-				.get::<ConnectionPool>()
-				.unwrap()
-			);
+			ActivityDb::from_activity(activity, i64::from(presence.user_id))
+				.write_to_db(ctx
+					.data
+					.read()
+					.await
+					.get::<ConnectionPool>()
+					.unwrap()
+			).await;
 		}
 	}
 
