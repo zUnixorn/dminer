@@ -58,3 +58,16 @@ pub async fn subtract(ctx: &Context, msg: &Message, mut args: Args) -> CommandRe
 
 	Ok(())
 }
+
+#[command]
+#[aliases("repl")]
+#[description("adds 2 numbers\nUsage: add number1 number2\nExample: add 2 2")]
+pub async fn eval(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+	let mut namespace = fasteval::EmptyNamespace; //no variables therefore empty namespace
+
+	let res = fasteval::ez_eval(args.rest(), &mut namespace)?;
+
+	msg.channel_id.say(&ctx.http, &res.to_string()).await?;
+
+	Ok(())
+}
