@@ -1,0 +1,6 @@
+[general]
+token = 'Your token here'
+prefix = '-'
+
+[database]
+database_url = 'postgres://user:password@localhorst/database'

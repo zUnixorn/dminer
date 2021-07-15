@@ -1,6 +1,3 @@
-use std::env;
-
-use dotenv::dotenv;
 use serenity::{
 	prelude::*,
 };
@@ -31,12 +28,15 @@ mod commands;
 mod message_processing;
 mod help;
 mod activity_kind;
+mod config;
+
 
 use message_processing::*;
 use help::*;
 use commands::*;
 use serenity::client::bridge::gateway::GatewayIntents;
 use crate::commands::hate::HateMessageTypeMap;
+use crate::config::{ConfigData};
 
 
 struct ShardManagerContainer;
@@ -45,24 +45,20 @@ impl TypeMapKey for ShardManagerContainer {
 	type Value = Arc<Mutex<ShardManager>>;
 }
 
-
-
 #[tokio::main]
 async fn main() {
-	dotenv().ok();
-
-	let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+	let config_data = config::read_config();
 
 	//Connect to the Database before connecting to discord - need not start the bot if the DB is down
 	let connection_pool = PgPoolOptions::new()
 		.max_connections(5)
 		//.idle_timeout(600)
-		.connect(&env::var("DATABASE_URL").expect("Database URL Environment Variable missing")[..])
+		.connect(&config_data.database.database_url)
 		.await
 		.expect("Error while connecting to database");
 
 
-	let http = Http::new_with_token(&token);
+	let http = Http::new_with_token(&config_data.general.token);
 
 
 	let (owners, bot_id) = match http.get_current_application_info().await {
@@ -81,7 +77,7 @@ async fn main() {
 		Err(why) => panic!("Could not access application info: {:?}", why),
 	};
 
-	let prefix = env::var("PREFIX").expect("Prefix not found in environment");
+	let prefix = &config_data.general.prefix;
 
 	let framework = StandardFramework::new()
 		.configure(|c| c
@@ -141,7 +137,7 @@ async fn main() {
 		.help(&MY_HELP)
 		.group(&GENERAL_GROUP);
 
-	let mut client = Client::builder(&token)
+	let mut client = Client::builder(&config_data.general.token)
 		.event_handler(Handler)
 		.framework(framework)
 		.intents(GatewayIntents::all()) //change to only require the intents we actually want
@@ -154,6 +150,7 @@ async fn main() {
 		data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
 		data.insert::<ConnectionPool>(connection_pool);
 		data.insert::<HateMessageTypeMap>(hate_messages);
+		data.insert::<ConfigData>(config_data);
 	}
 
 	if let Err(why) = client.start().await {
