@@ -1,3 +1,3 @@
 pub mod meta;
-mod math;
+pub mod math;
 pub mod hate;

@@ -12,13 +12,16 @@ use serenity::{
 	},
 };
 
-use crate::commands::hate::*;
-use crate::commands::meta::*;
+use crate::commands::{math::*, hate::*, meta::*};
 
 #[group]
 #[commands(ping, latency, hate)]
 pub struct General;
 
+#[group]
+#[prefix = "math"]
+#[commands(add)]
+struct Math;
 
 #[hook]
 pub async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
