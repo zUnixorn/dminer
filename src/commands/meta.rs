@@ -52,7 +52,7 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-#[aliases("durr")]
+#[aliases("durr, deeb")]
 async fn deer(ctx: &Context, msg: &Message) -> CommandResult {
 	msg.channel_id.send_message(&ctx.http, |message| {
 		message.embed(|embed| {
