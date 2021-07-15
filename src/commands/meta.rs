@@ -54,15 +54,15 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 #[command]
 #[aliases("durr", "deeb", "shill")]
 async fn deer(ctx: &Context, msg: &Message) -> CommandResult {
-	msg.channel_id.send_message(&ctx.http, |message| {
+	let file_paths = vec!["assets/deerbot-pfp.png"];
+
+	msg.channel_id.send_files(&ctx.http, file_paths, |message| {
 		message.embed(|embed| {
-			embed.title("Get da durr bot!!11!!!1")
-				 .thumbnail("attachment://assets/deerbot-pfp.png")
-				 .field("I am definitely not being held at gunpoint right now, why don't you \
-				 check out this very cool and awesome Reisrundfunk bot that does some things:",
-						"[click here!](https://f.ls/deerbot)", true)
-
-
+			embed.field("I am definitely not being held at gunpoint right now, why don't you \
+				 check out the deer bot that does some deer things:",
+						"[click here!](https://f.ls/deerbot)", true);
+			embed.thumbnail("attachment://deerbot-pfp.png");
+			embed
 		})
 	},
 	).await?;
