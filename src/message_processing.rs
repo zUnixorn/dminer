@@ -20,7 +20,7 @@ pub struct General;
 
 #[group]
 #[prefix = "math"]
-#[commands(add, multiply, divide, subtract, eval)]
+#[commands(eval)]
 struct Math;
 
 #[hook]
