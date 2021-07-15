@@ -22,7 +22,7 @@ impl ActivityDb {
 		let now = SystemTime::now()
 			.duration_since(UNIX_EPOCH)
 			.expect("system clock set before 01.01.1970")
-			.as_secs();
+			.as_millis() as u64;
 
 		Self {
 			user_id,
@@ -33,9 +33,14 @@ impl ActivityDb {
 			activity_name: activity.name,
 			party: activity.party.is_some(),
 			state: activity.state,
-			start_timestamp: activity.timestamps.clone().map(|a| a.start).flatten()
+			start_timestamp: activity.timestamps
+				.clone()
+				.map(|a| a.start)
+				.flatten()
 				.unwrap_or(now) as i64,
-			end_timestamp: activity.timestamps.map(|a| a.end.map(|o| o as i64)).flatten(),
+			end_timestamp: activity.timestamps
+				.map(|a| a.end.map(|o| o as i64))
+				.flatten(),
 		}
 	}
 

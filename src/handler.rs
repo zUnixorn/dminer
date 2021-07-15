@@ -120,7 +120,7 @@ impl EventHandler for Handler {
 				.await
 				.get::<ConnectionPool>()
 				.unwrap()
-			).await;
+			).await.unwrap();
 
 		for activity in presence.activities {
 			println!("activity: {}, from user: {}{}",
@@ -138,7 +138,7 @@ impl EventHandler for Handler {
 					.await
 					.get::<ConnectionPool>()
 					.unwrap()
-				).await;
+				).await.unwrap();
 		}
 	}
 
