@@ -50,3 +50,18 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 
 	Ok(())
 }
+
+#[command]
+#[aliases("durr")]
+async fn deer(ctx: &Context, msg: &Message) -> CommandResult {
+	msg.channel_id.send_message(&ctx.http, |message| {
+		message.embed(|embed| {
+			embed.title("Get da durr bot!!11!!!1")
+				 .description("The durr bot is funny, try it out:")
+				 .field("Invite Link:", "https://f.ls/deerbot", true)
+		})
+	},
+	).await?;
+
+	Ok(())
+}

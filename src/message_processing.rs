@@ -15,7 +15,7 @@ use serenity::{
 use crate::commands::{math::*, hate::*, meta::*};
 
 #[group]
-#[commands(ping, latency, hate)]
+#[commands(ping, latency, hate, deer)]
 pub struct General;
 
 #[group]
