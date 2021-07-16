@@ -218,7 +218,30 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 				)
 				.await?;
 		}
+	} else {
+		msg.channel_id
+			.say(&ctx.http, "Not in a voice channel to play in")
+			.await?;
+	}
 
+	Ok(())
+}
+
+#[command]
+#[only_in(guilds)]
+async fn skip(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+	let guild = msg.guild(&ctx.cache).await.unwrap();
+	let guild_id = guild.id;
+
+	let manager = songbird::get(ctx)
+		.await
+		.expect("Songbird Voice client placed in at initialisation.")
+		.clone();
+
+	if let Some(handler_lock) = manager.get(guild_id) {
+		let mut handler = handler_lock.lock().await;
+
+		let _ = handler.queue().skip();
 
 	} else {
 		msg.channel_id
