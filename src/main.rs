@@ -1,23 +1,30 @@
+use std::collections::HashSet;
+use std::sync::Arc;
+
 use serenity::{
 	prelude::*,
 };
-use sqlx::postgres::PgPoolOptions;
-use tokio;
-
-use connection_pool::ConnectionPool;
-
-use crate::handler::Handler;
-use std::collections::HashSet;
-
 use serenity::{
-	client::bridge::gateway::{ShardManager},
+	client::bridge::gateway::ShardManager,
 	framework::standard::{
-		buckets::{LimitedFor},
+		buckets::LimitedFor,
 		StandardFramework,
 	},
 	http::Http,
 };
-use std::sync::Arc;
+use serenity::client::bridge::gateway::GatewayIntents;
+use sqlx::postgres::PgPoolOptions;
+use tokio;
+
+use commands::*;
+use connection_pool::ConnectionPool;
+use help::*;
+use message_processing::*;
+use songbird::SerenityInit;
+
+use crate::commands::hate::HateMessageTypeMap;
+use crate::config::ConfigData;
+use crate::handler::Handler;
 
 mod handler;
 mod user_db;
@@ -29,14 +36,6 @@ mod message_processing;
 mod help;
 mod activity_kind;
 mod config;
-
-
-use message_processing::*;
-use help::*;
-use commands::*;
-use serenity::client::bridge::gateway::GatewayIntents;
-use crate::commands::hate::HateMessageTypeMap;
-use crate::config::{ConfigData};
 
 
 struct ShardManagerContainer;
@@ -73,7 +72,7 @@ async fn main() {
 				Ok(bot_id) => (owners, bot_id.id),
 				Err(why) => panic!("Could not access the bot id: {:?}", why),
 			}
-		},
+		}
 		Err(why) => panic!("Could not access application info: {:?}", why),
 	};
 
@@ -136,12 +135,14 @@ async fn main() {
 		// #name is turned all uppercase
 		.help(&MY_HELP)
 		.group(&GENERAL_GROUP)
-		.group(&MATH_GROUP);
+		.group(&MATH_GROUP)
+		.group(&MUSIC_GROUP);
 
 	let mut client = Client::builder(&config_data.general.token)
 		.event_handler(Handler)
 		.framework(framework)
 		.intents(GatewayIntents::all()) //change to only require the intents we actually want
+		.register_songbird()
 		.await
 		.expect("Err creating client");
 
