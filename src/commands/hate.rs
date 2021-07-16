@@ -12,7 +12,7 @@ use serde::Serialize;
 #[description("Gives you a nice message by linus torvalds :)")]
 async fn hate(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
-	let messages = data.get::<HateMessageTypeMap>().unwrap();
+	let messages = data.get::<HateMessage>().unwrap();
 
 	let mut rng = rand::rngs::StdRng::from_entropy();
 	let random_number = rng.gen_range(0..messages.len() as i64) as usize;
@@ -29,9 +29,7 @@ pub struct HateMessage {
 	hate: f64,
 }
 
-pub struct HateMessageTypeMap;
-
-impl TypeMapKey for HateMessageTypeMap {
+impl TypeMapKey for HateMessage {
 	type Value = Vec<HateMessage>;
 }
 

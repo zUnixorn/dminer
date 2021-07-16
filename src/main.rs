@@ -35,7 +35,7 @@ use message_processing::*;
 use help::*;
 use commands::*;
 use serenity::client::bridge::gateway::GatewayIntents;
-use crate::commands::hate::HateMessageTypeMap;
+use crate::commands::hate::{HateMessage};
 use crate::config::{ConfigData};
 
 
@@ -150,7 +150,7 @@ async fn main() {
 		let hate_messages = hate::load_hate_messages("./hate.json").await;
 		data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
 		data.insert::<ConnectionPool>(connection_pool);
-		data.insert::<HateMessageTypeMap>(hate_messages);
+		data.insert::<HateMessage>(hate_messages);
 		data.insert::<ConfigData>(config_data);
 	}
 
