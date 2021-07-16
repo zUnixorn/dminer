@@ -24,7 +24,7 @@ pub struct General;
 struct Math;
 
 #[group]
-#[commands(join, leave, play)]
+#[commands(join, leave, play, queue)]
 pub struct Music;
 
 #[hook]
