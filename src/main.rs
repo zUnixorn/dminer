@@ -15,7 +15,11 @@ use serenity::{
 use serenity::client::bridge::gateway::GatewayIntents;
 
 #[cfg(feature = "music")]
-use songbird::SerenityInit;
+use {
+	songbird::SerenityInit,
+	lavalink_rs::{LavalinkClient},
+	crate::music::*,
+};
 
 use sqlx::postgres::PgPoolOptions;
 use tokio;
@@ -148,11 +152,33 @@ async fn main() {
 		.framework(framework)
 		.intents(GatewayIntents::all()); //change to only require the intents we actually want
 
-
 	#[cfg(feature = "music")]
 		let client = client.register_songbird();
 
 	let mut client = client.await.expect("Error creating client");
+
+	#[cfg(feature = "music")]
+		{
+			let lavalink_password = &config_data
+				.music
+				.as_ref()
+				.unwrap()
+				.lavalink_password;
+
+			let lava_client = match LavalinkClient::builder(bot_id)
+				.set_host("127.0.0.1")
+				.set_password(lavalink_password)
+				.build(LavalinkHandler)
+				.await {
+				Ok(client) => client,
+				Err(why) => panic!("Error with lavalink client: {:?}", why)
+			};
+
+			{
+				let mut data = client.data.write().await;
+				data.insert::<Lavalink>(lava_client);
+			}
+		}
 
 	{
 		let mut data = client.data.write().await;
