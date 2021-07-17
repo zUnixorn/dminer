@@ -14,6 +14,9 @@ use serenity::{
 
 use crate::commands::{math::*, hate::*, meta::*};
 
+#[cfg(feature = "music")]
+use crate::commands::music::*;
+
 #[group]
 #[commands(ping, latency, hate, deer)]
 pub struct General;
@@ -22,6 +25,11 @@ pub struct General;
 #[prefix = "math"]
 #[commands(eval)]
 struct Math;
+
+#[cfg(feature = "music")]
+#[group]
+#[commands(join, leave, play, skip)]
+pub struct Music;
 
 #[hook]
 pub async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {

@@ -1,23 +1,33 @@
+use std::collections::HashSet;
+use std::sync::Arc;
+
 use serenity::{
 	prelude::*,
 };
-use sqlx::postgres::PgPoolOptions;
-use tokio;
-
-use connection_pool::ConnectionPool;
-
-use crate::handler::Handler;
-use std::collections::HashSet;
-
 use serenity::{
-	client::bridge::gateway::{ShardManager},
+	client::bridge::gateway::ShardManager,
 	framework::standard::{
-		buckets::{LimitedFor},
+		buckets::LimitedFor,
 		StandardFramework,
 	},
 	http::Http,
 };
-use std::sync::Arc;
+use serenity::client::bridge::gateway::GatewayIntents;
+
+#[cfg(feature = "music")]
+use songbird::SerenityInit;
+
+use sqlx::postgres::PgPoolOptions;
+use tokio;
+
+use commands::*;
+use connection_pool::ConnectionPool;
+use help::*;
+use message_processing::*;
+
+use crate::commands::hate::HateMessageTypeMap;
+use crate::config::ConfigData;
+use crate::handler::Handler;
 
 mod handler;
 mod user_db;
@@ -29,14 +39,6 @@ mod message_processing;
 mod help;
 mod activity_kind;
 mod config;
-
-
-use message_processing::*;
-use help::*;
-use commands::*;
-use serenity::client::bridge::gateway::GatewayIntents;
-use crate::commands::hate::{HateMessage};
-use crate::config::{ConfigData};
 
 
 struct ShardManagerContainer;
@@ -73,7 +75,7 @@ async fn main() {
 				Ok(bot_id) => (owners, bot_id.id),
 				Err(why) => panic!("Could not access the bot id: {:?}", why),
 			}
-		},
+		}
 		Err(why) => panic!("Could not access application info: {:?}", why),
 	};
 
@@ -138,19 +140,26 @@ async fn main() {
 		.group(&GENERAL_GROUP)
 		.group(&MATH_GROUP);
 
-	let mut client = Client::builder(&config_data.general.token)
+	#[cfg(feature = "music")]
+		let framework = framework.group(&MUSIC_GROUP);
+
+	let client = Client::builder(&config_data.general.token)
 		.event_handler(Handler)
 		.framework(framework)
-		.intents(GatewayIntents::all()) //change to only require the intents we actually want
-		.await
-		.expect("Err creating client");
+		.intents(GatewayIntents::all()); //change to only require the intents we actually want
+
+
+	#[cfg(feature = "music")]
+		let client = client.register_songbird();
+
+	let mut client = client.await.expect("Error creating client");
 
 	{
 		let mut data = client.data.write().await;
 		let hate_messages = hate::load_hate_messages("./hate.json").await;
 		data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
 		data.insert::<ConnectionPool>(connection_pool);
-		data.insert::<HateMessage>(hate_messages);
+		data.insert::<HateMessageTypeMap>(hate_messages);
 		data.insert::<ConfigData>(config_data);
 	}
 

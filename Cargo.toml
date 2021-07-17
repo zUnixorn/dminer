@@ -18,5 +18,14 @@ fasteval = "0.2.4"
 
 [dependencies.serenity]
 default-features = false
-features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "framework", "standard_framework"]
+features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "framework", "standard_framework", "voice"]
 version = "0.10"
+
+[dependencies.songbird]
+version = "0.1.1"
+features = ["builtin-queue"]
+optional = true
+
+[features]
+default = []
+music = ["songbird"]

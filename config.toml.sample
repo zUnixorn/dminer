@@ -1,3 +1,6 @@
+# DO NOT SHARE THE CONFIG FILE WITH YOUR DETAILS INSIDE WITH ANYONE
+# It contains sensitive data such as database details and your discord token
+
 [general]
 token = 'Your token here'
 prefix = '-'
