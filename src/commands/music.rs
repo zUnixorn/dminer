@@ -3,16 +3,13 @@ use std::sync::atomic::AtomicUsize;
 
 use serenity::{
 	async_trait,
-	client::{Client, EventHandler},
 	framework::{
 		standard::{
 			Args, CommandResult,
 			macros::command,
 		},
-		StandardFramework,
 	},
-	model::{channel::Message, gateway::Ready},
-	Result as SerenityResult,
+	model::{channel::Message},
 };
 use serenity::http::Http;
 use serenity::model::prelude::ChannelId;
@@ -25,8 +22,6 @@ use songbird::{
 		self,
 		restartable::Restartable,
 	},
-	SerenityInit,
-	TrackEvent,
 };
 
 struct TrackEndNotifier {
@@ -38,9 +33,9 @@ struct TrackEndNotifier {
 impl VoiceEventHandler for TrackEndNotifier {
 	async fn act(&self, ctx: &EventContext<'_>) -> Option<Event> {
 		if let EventContext::Track(track_list) = ctx {
-			self.chan_id
+			let _ = self.chan_id
 				.say(&self.http, &format!("Tracks ended: {}.", track_list.len()))
-				.await;
+				.await; //TODO log err using logging framework
 		}
 
 		None
@@ -181,7 +176,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
 #[command]
 #[only_in(guilds)]
-async fn skip(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 	let guild = msg.guild(&ctx.cache).await.unwrap();
 	let guild_id = guild.id;
 
@@ -191,7 +186,7 @@ async fn skip(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 		.clone();
 
 	if let Some(handler_lock) = manager.get(guild_id) {
-		let mut handler = handler_lock.lock().await;
+		let handler = handler_lock.lock().await;
 
 		let _ = handler.queue().skip();
 
