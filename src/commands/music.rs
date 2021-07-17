@@ -19,7 +19,6 @@ use songbird::{
 	EventContext,
 	EventHandler as VoiceEventHandler,
 	input::{
-		self,
 		restartable::Restartable,
 	},
 };
