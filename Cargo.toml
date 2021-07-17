@@ -33,4 +33,5 @@ optional = true
 
 [features]
 default = []
+all = ["music"]
 music = ["songbird", "lavalink-rs"]
