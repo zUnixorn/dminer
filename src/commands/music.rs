@@ -41,12 +41,6 @@ impl VoiceEventHandler for TrackEndNotifier {
 	}
 }
 
-struct ChannelDurationNotifier {
-	channel_id: ChannelId,
-	count: Arc<AtomicUsize>,
-	http: Arc<Http>,
-}
-
 #[command]
 #[only_in(guilds)]
 async fn join(ctx: &Context, msg: &Message) -> CommandResult {
