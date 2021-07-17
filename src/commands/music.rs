@@ -25,7 +25,7 @@ use songbird::{
 };
 
 struct TrackEndNotifier {
-	chan_id: ChannelId,
+	channel_id: ChannelId,
 	http: Arc<Http>,
 }
 
@@ -33,7 +33,7 @@ struct TrackEndNotifier {
 impl VoiceEventHandler for TrackEndNotifier {
 	async fn act(&self, ctx: &EventContext<'_>) -> Option<Event> {
 		if let EventContext::Track(track_list) = ctx {
-			let _ = self.chan_id
+			let _ = self.channel_id
 				.say(&self.http, &format!("Tracks ended: {}.", track_list.len()))
 				.await; //TODO log err using logging framework
 		}
@@ -43,7 +43,7 @@ impl VoiceEventHandler for TrackEndNotifier {
 }
 
 struct ChannelDurationNotifier {
-	chan_id: ChannelId,
+	channel_id: ChannelId,
 	count: Arc<AtomicUsize>,
 	http: Arc<Http>,
 }
