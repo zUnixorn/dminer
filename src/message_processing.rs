@@ -29,7 +29,7 @@ struct Math;
 #[cfg(feature = "music")]
 #[group]
 #[only_in(guilds)]
-#[commands(join, leave, play, skip)]
+#[commands(join, leave, play, skip, info)]
 pub struct Music;
 
 #[hook]
