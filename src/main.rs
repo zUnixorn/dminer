@@ -13,6 +13,10 @@ use serenity::{
 	http::Http,
 };
 use serenity::client::bridge::gateway::GatewayIntents;
+
+#[cfg(feature = "music")]
+use songbird::SerenityInit;
+
 use sqlx::postgres::PgPoolOptions;
 use tokio;
 
@@ -20,7 +24,6 @@ use commands::*;
 use connection_pool::ConnectionPool;
 use help::*;
 use message_processing::*;
-use songbird::SerenityInit;
 
 use crate::commands::hate::HateMessageTypeMap;
 use crate::config::ConfigData;
@@ -135,16 +138,21 @@ async fn main() {
 		// #name is turned all uppercase
 		.help(&MY_HELP)
 		.group(&GENERAL_GROUP)
-		.group(&MATH_GROUP)
-		.group(&MUSIC_GROUP);
+		.group(&MATH_GROUP);
 
-	let mut client = Client::builder(&config_data.general.token)
+	#[cfg(feature = "music")]
+		let framework = framework.group(&MUSIC_GROUP);
+
+	let client = Client::builder(&config_data.general.token)
 		.event_handler(Handler)
 		.framework(framework)
-		.intents(GatewayIntents::all()) //change to only require the intents we actually want
-		.register_songbird()
-		.await
-		.expect("Err creating client");
+		.intents(GatewayIntents::all()); //change to only require the intents we actually want
+
+
+	#[cfg(feature = "music")]
+		let client = client.register_songbird();
+
+	let mut client = client.await.expect("Error creating client");
 
 	{
 		let mut data = client.data.write().await;
