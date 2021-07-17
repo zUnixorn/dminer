@@ -133,7 +133,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 			Err(why) => {
 				println!("Err starting source: {:?}", why);
 
-				msg.channel_id.say(&ctx.http, "Error sourcing ffmpeg").await?;
+				msg.channel_id.say(&ctx.http, "Error loading link, maybe it was invalid?").await?;
 
 				return Ok(());
 			}
