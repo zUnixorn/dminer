@@ -276,6 +276,7 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 			if i >= queue.len() {break} //Stop the loop at the end of the Vector
 			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
 		}
+		page_content.push_str(&format!("\n\nPage {} of {}", page, (queue.len()) / 15))
 	};
 
 	msg.channel_id.send_message(&ctx.http, |msg| {
