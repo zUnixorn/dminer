@@ -22,6 +22,7 @@ use songbird::{
 	EventContext,
 	EventHandler as VoiceEventHandler,
 };
+use chrono::Duration;
 
 struct TrackEndNotifier {
 	channel_id: ChannelId,
@@ -235,7 +236,7 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
 					message.embed(|embed| {
 						embed.field("Title: ", &track.track.info.as_ref().unwrap().title, false)
 							.field("Link: ", &track.track.info.as_ref().unwrap().uri, false)
-							.field("Duration: ", &track.track.info.as_ref().unwrap().length, false)
+							.field("Duration: ", format_millis(track.track.info.as_ref().unwrap().length), false)
 					}
 					)
 				},
@@ -328,4 +329,9 @@ async fn unpause(ctx: &Context, msg: &Message) -> CommandResult {
 	msg.channel_id.say(&ctx.http, "Unpaused player").await?;
 
 	Ok(())
+}
+
+fn format_millis(millis: u64) -> String {
+	let duration = Duration::milliseconds(millis as i64);
+	format!("{:02}:{:02}:{:02}", duration.num_hours(), duration.num_minutes(), duration.num_seconds())
 }
