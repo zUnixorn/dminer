@@ -312,7 +312,7 @@ async fn pause(ctx: &Context, msg: &Message) -> CommandResult {
 	let guild_id = u64::from(msg.guild_id.unwrap());
 
 	lava_client.pause(guild_id).await?;
-
+	msg.channel_id.say(&ctx.http, "Paused player").await?;
 
 	Ok(())
 }
@@ -325,7 +325,7 @@ async fn unpause(ctx: &Context, msg: &Message) -> CommandResult {
 	let guild_id = u64::from(msg.guild_id.unwrap());
 
 	lava_client.resume(guild_id).await?;
-
+	msg.channel_id.say(&ctx.http, "Unpaused player").await?;
 
 	Ok(())
 }
