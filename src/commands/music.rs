@@ -186,10 +186,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 		msg.channel_id
 			.say(
 				&ctx.http,
-				format!(
-					"Added to queue: {}",
-					query_information.tracks[0].info.as_ref().unwrap().title
-				),
+				"Added Track(s)",
 			)
 			.await?;
 	} else {
@@ -273,7 +270,7 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
 		let queue = &node.queue;
 		for i in (15 * (page - 1))..(15 * page) {
-			if i >= queue.len() {break} //Stop the loop at the end of the Vector
+			if i >= queue.len() { break; } //Stop the loop at the end of the Vector
 			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
 		}
 		page_content.push_str(&format!("\n\nPage {} of {}", page, (queue.len()) / 15))
