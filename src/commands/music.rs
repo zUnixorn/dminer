@@ -55,8 +55,10 @@ impl LavalinkEventHandler for LavalinkHandler {
 	async fn track_start(&self, _client: LavalinkClient, event: TrackStart) {
 		println!("Track started!\nGuild: {}", event.guild_id);
 	}
+
 	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
-		println!("Track finished!\nGuild: {}", event.guild_id)
+		println!("Track finished!\nGuild: {}", event.guild_id);
+		println!("Track finish reason: {}", event.reason);
 	}
 }
 
@@ -294,7 +296,7 @@ async fn clear(ctx: &Context, msg: &Message) -> CommandResult {
 
 	if let Some(mut node) = lava_client.nodes().await.get_mut(&guild_id) {
 		node.queue.clear();
-		msg.channel_id.say(&ctx.http, "Cleared queue")
+		msg.channel_id.say(&ctx.http, "Cleared queue").await?;
 	} else {
 		msg.reply(&ctx.http, "Not in a channel").await?;
 	}
