@@ -1,3 +1,5 @@
+use std::cmp::max;
+use std::num::ParseIntError;
 use std::sync::Arc;
 
 use lavalink_rs::gateway::LavalinkEventHandler;
@@ -228,15 +230,16 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
 
 	if let Some(node) = lava_client.nodes().await.get(&msg.guild_id.unwrap().0) {
 		if let Some(track) = &node.now_playing {
-			msg.channel_id.send_message(&ctx.http,
-										|message| {
-											message.embed(|embed| {
-												embed.field("Title: ", &track.track.info.as_ref().unwrap().title, false)
-													.field("Link: ", &track.track.info.as_ref().unwrap().uri, false)
-													.field("Duration: ", &track.track.info.as_ref().unwrap().length, false)
-											}
-											)
-										},
+			msg.channel_id.send_message(
+				&ctx.http,
+				|message| {
+					message.embed(|embed| {
+						embed.field("Title: ", &track.track.info.as_ref().unwrap().title, false)
+							.field("Link: ", &track.track.info.as_ref().unwrap().uri, false)
+							.field("Duration: ", &track.track.info.as_ref().unwrap().length, false)
+					}
+					)
+				},
 			)
 				.await?;
 		} else {
@@ -249,5 +252,38 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
 			.say(&ctx.http, "Nothing is playing at the moment.")
 			.await?;
 	}
+	Ok(())
+}
+
+#[command]
+async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+	let guild_id = u64::from(msg.guild_id.unwrap());
+
+	let page = if args.len() < 1 {
+		1
+	} else {
+		let page_number = args.single::<usize>()?;
+		max(page_number, 1)
+	};
+
+
+	let mut page_content = String::new();
+	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
+		let queue = &node.queue;
+		for i in (15 * (page - 1))..(15 * page) {
+			if i >= queue.len() {break} //Stop the loop at the end of the Vector
+			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
+		}
+	};
+
+	msg.channel_id.send_message(&ctx.http, |msg| {
+		msg.embed(|embed| {
+			embed.description(page_content)
+		})
+	}).await?;
+
+
 	Ok(())
 }
