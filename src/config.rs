@@ -7,7 +7,8 @@ use serenity::prelude::TypeMapKey;
 #[derive(Deserialize)]
 pub struct ConfigData {
 	pub general: General,
-	pub database: Database
+	pub database: Database,
+	pub music: Option<Music>
 }
 
 #[derive(Deserialize)]
@@ -20,6 +21,12 @@ pub struct General {
 pub struct Database {
 	pub database_url: String,
 }
+
+#[derive(Deserialize)]
+pub struct Music {
+	pub lavalink_password: String
+}
+
 
 impl TypeMapKey for ConfigData {
 	type Value = ConfigData;

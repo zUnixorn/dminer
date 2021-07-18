@@ -7,3 +7,6 @@ prefix = '-'
 
 [database]
 database_url = 'postgres://user:password@localhorst/database'
+
+# [music]
+# lavalink_password = 'youshallnotpass'

@@ -1,5 +1,9 @@
+use std::cmp::max;
 use std::sync::Arc;
 
+use lavalink_rs::gateway::LavalinkEventHandler;
+use lavalink_rs::LavalinkClient;
+use lavalink_rs::model::{TrackFinish, TrackStart};
 use serenity::{
 	async_trait,
 	framework::{
@@ -17,10 +21,8 @@ use songbird::{
 	Event,
 	EventContext,
 	EventHandler as VoiceEventHandler,
-	input::{
-		restartable::Restartable,
-	},
 };
+use chrono::Duration;
 
 struct TrackEndNotifier {
 	channel_id: ChannelId,
@@ -40,49 +42,97 @@ impl VoiceEventHandler for TrackEndNotifier {
 	}
 }
 
+pub struct Lavalink;
+
+impl TypeMapKey for Lavalink {
+	type Value = LavalinkClient;
+}
+
+pub(crate) struct LavalinkHandler;
+
+#[async_trait]
+impl LavalinkEventHandler for LavalinkHandler {
+	async fn track_start(&self, _client: LavalinkClient, event: TrackStart) {
+		println!("Track started!\nGuild: {}", event.guild_id);
+		//Use the data inside the Node Struct to store a Channel ID in the data Typemap field
+	}
+
+	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
+		println!("Track finished!\nGuild: {}", event.guild_id);
+		println!("Track finish reason: {}", event.reason);
+	}
+}
+
 #[command]
-#[only_in(guilds)]
 async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 	let guild = msg.guild(&ctx.cache).await.unwrap();
 	let guild_id = guild.id;
 
 	let channel_id = guild
-		.voice_states.get(&msg.author.id)
+		.voice_states
+		.get(&msg.author.id)
 		.and_then(|voice_state| voice_state.channel_id);
 
 	let connect_to = match channel_id {
 		Some(channel) => channel,
 		None => {
-			msg.reply(ctx, "Not in a voice channel").await?;
+			msg.reply(ctx, "Join a voice channel.").await?;
 
 			return Ok(());
 		}
 	};
 
-	let manager = songbird::get(ctx).await
-		.expect("Songbird Voice client placed in at initialisation.").clone();
+	let manager = songbird::get(ctx).await.unwrap().clone();
 
-	let _handler = manager.join(guild_id, connect_to).await;
+	let (_, handler) = manager.join_gateway(guild_id, connect_to).await;
 
-	msg.channel_id.say(&ctx.http, "Joined channel").await?;
+	match handler {
+		Ok(connection_info) => {
+			let data = ctx.data.read().await;
+			let lava_client = data.get::<Lavalink>().unwrap().clone();
+			lava_client.create_session(&connection_info).await?;
+
+			msg.channel_id
+				.say(&ctx.http, &format!("Joined {}", connect_to.mention()))
+				.await?;
+		}
+		Err(why) => {
+			msg.channel_id
+				.say(&ctx.http, format!("Error joining the channel: {}", why))
+				.await?;
+		}
+	}
 
 	Ok(())
 }
 
 #[command]
-#[only_in(guilds)]
 #[aliases("fuckoff")]
 async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
 	let guild = msg.guild(&ctx.cache).await.unwrap();
 	let guild_id = guild.id;
 
-	let manager = songbird::get(ctx).await
-		.expect("Songbird Voice client placed in at initialisation.").clone();
+	let manager = songbird::get(ctx).await.unwrap().clone();
 	let has_handler = manager.get(guild_id).is_some();
 
 	if has_handler {
 		if let Err(e) = manager.remove(guild_id).await {
 			msg.channel_id.say(&ctx.http, format!("Failed: {:?}", e)).await?;
+		}
+
+		//Clean up the player, even loops and data on leave
+		//See https://docs.rs/lavalink-rs/0.7.2/lavalink_rs/struct.LavalinkClient.html#method.destroy
+		{
+			let data = ctx.data.read().await;
+			let lava_client = data.get::<Lavalink>().unwrap().clone();
+			lava_client.destroy(guild_id).await?;
+			{
+				let nodes = lava_client.nodes().await;
+				nodes.remove(&guild_id.0);
+
+				let loops = lava_client.loops().await;
+				loops.remove(&guild_id.0);
+			}
 		}
 
 		msg.channel_id.say(&ctx.http, "Left voice channel").await?;
@@ -94,72 +144,60 @@ async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-#[only_in(guilds)]
-async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-	let url = match args.single::<String>() {
-		Ok(url) => url,
-		Err(_) => {
+async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+	let query = args.message().to_string();
+
+	let guild_id = match ctx.cache.guild_channel(msg.channel_id).await {
+		Some(channel) => channel.guild_id,
+		None => {
 			msg.channel_id
-				.say(&ctx.http, "Must provide a URL to a video or audio")
+				.say(&ctx.http, "Error finding channel info")
 				.await?;
 
 			return Ok(());
 		}
 	};
 
-	if !url.starts_with("http") {
-		msg.channel_id
-			.say(&ctx.http, "Must provide a valid URL")
-			.await?;
+	let manager = songbird::get(ctx).await.unwrap().clone();
 
-		return Ok(());
-	}
+	if let Some(_handler) = manager.get(guild_id) {
+		let data = ctx.data.read().await;
+		let lava_client = data.get::<Lavalink>().unwrap().clone();
 
-	let guild = msg.guild(&ctx.cache).await.unwrap();
-	let guild_id = guild.id;
+		let query_information = lava_client.get_tracks(&query).await?;
 
-	let manager = songbird::get(ctx)
-		.await
-		.expect("Songbird Voice client placed in at initialisation.")
-		.clone();
-
-	if let Some(handler_lock) = manager.get(guild_id) {
-		let mut handler = handler_lock.lock().await;
-
-		// Here, we use lazy restartable sources to make sure that we don't pay
-		// for decoding, playback on tracks which aren't actually live yet.
-		let source = match Restartable::ytdl(url, true).await {
-			Ok(source) => source,
-			Err(why) => {
-				println!("Err starting source: {:?}", why);
-
-				msg.channel_id.say(&ctx.http, "Error loading link, maybe it was invalid?").await?;
-
-				return Ok(());
-			}
-		};
-
-
-		handler.enqueue_source(source.into());
-
-		if handler.queue().len() == 1 {
+		if query_information.tracks.is_empty() {
 			msg.channel_id
-				.say(
-					&ctx.http,
-					format!("Now playing the song"),
-				)
+				.say(&ctx, "Could not find any video of the search query.")
 				.await?;
-		} else {
-			msg.channel_id
-				.say(
-					&ctx.http,
-					format!("Added song to queue: position {}", handler.queue().len()),
-				)
-				.await?;
+			return Ok(());
 		}
+
+		for track in &query_information.tracks {
+			if let Err(why) =
+
+			&lava_client.play(guild_id, track.clone())
+				// Change this to play() if you want your own custom queue or no queue at all.
+				.queue()
+				.await
+			{
+				eprintln!("{}", why);
+				return Ok(());
+			};
+		}
+
+		msg.channel_id
+			.say(
+				&ctx.http,
+				"Added Track(s)",
+			)
+			.await?;
 	} else {
 		msg.channel_id
-			.say(&ctx.http, "Not in a voice channel to play in")
+			.say(
+				&ctx.http,
+				"Use `join` first, to connect the bot to your current voice channel.",
+			)
 			.await?;
 	}
 
@@ -167,26 +205,133 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 }
 
 #[command]
-#[only_in(guilds)]
-async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-	let guild = msg.guild(&ctx.cache).await.unwrap();
-	let guild_id = guild.id;
+async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
 
-	let manager = songbird::get(ctx)
-		.await
-		.expect("Songbird Voice client placed in at initialisation.")
-		.clone();
-
-	if let Some(handler_lock) = manager.get(guild_id) {
-		let handler = handler_lock.lock().await;
-
-		let _ = handler.queue().skip();
-
-	} else {
+	if let Some(track) = lava_client.skip(msg.guild_id.unwrap()).await {
 		msg.channel_id
-			.say(&ctx.http, "Not in a voice channel to play in")
+			.say(
+				ctx,
+				format!("Skipped: {}", track.track.info.as_ref().unwrap().title),
+			)
 			.await?;
+	} else {
+		msg.channel_id.say(ctx, "Nothing to skip.").await?;
 	}
 
 	Ok(())
+}
+
+#[command]
+async fn info(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+
+	if let Some(node) = lava_client.nodes().await.get(&msg.guild_id.unwrap().0) {
+		if let Some(track) = &node.now_playing {
+			msg.channel_id.send_message(
+				&ctx.http,
+				|message| {
+					message.embed(|embed| {
+						embed.field("Title: ", &track.track.info.as_ref().unwrap().title, false)
+							.field("Link: ", &track.track.info.as_ref().unwrap().uri, false)
+							.field("Duration: ", format_millis(track.track.info.as_ref().unwrap().length), false)
+					}
+					)
+				},
+			)
+				.await?;
+		} else {
+			msg.channel_id
+				.say(&ctx.http, "Nothing is playing at the moment.")
+				.await?;
+		}
+	} else {
+		msg.channel_id
+			.say(&ctx.http, "Nothing is playing at the moment.")
+			.await?;
+	}
+	Ok(())
+}
+
+#[command]
+async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+	let guild_id = u64::from(msg.guild_id.unwrap());
+
+	let page = if args.len() < 1 {
+		1
+	} else {
+		let page_number = args.single::<usize>()?;
+		max(page_number, 1)
+	};
+
+
+	let mut page_content = String::new();
+	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
+		let queue = &node.queue;
+		for i in (15 * (page - 1))..(15 * page) {
+			if i >= queue.len() { break; } //Stop the loop at the end of the Vector
+			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
+		}
+		page_content.push_str(&format!("\n\nPage {} of {}", page, ((queue.len()) / 15) + 1)) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
+	};
+
+	msg.channel_id.send_message(&ctx.http, |msg| {
+		msg.embed(|embed| {
+			embed.description(page_content)
+		})
+	}).await?;
+
+
+	Ok(())
+}
+
+#[command]
+async fn clear(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+	let guild_id = u64::from(msg.guild_id.unwrap());
+
+	if let Some(mut node) = lava_client.nodes().await.get_mut(&guild_id) {
+		node.queue.clear();
+		msg.channel_id.say(&ctx.http, "Cleared queue").await?;
+	} else {
+		msg.reply(&ctx.http, "Not in a channel").await?;
+	}
+
+
+	Ok(())
+}
+
+#[command]
+async fn pause(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+	let guild_id = u64::from(msg.guild_id.unwrap());
+
+	lava_client.pause(guild_id).await?;
+	msg.channel_id.say(&ctx.http, "Paused player").await?;
+
+	Ok(())
+}
+
+#[command]
+#[aliases("resume")]
+async fn unpause(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+	let guild_id = u64::from(msg.guild_id.unwrap());
+
+	lava_client.resume(guild_id).await?;
+	msg.channel_id.say(&ctx.http, "Unpaused player").await?;
+
+	Ok(())
+}
+
+fn format_millis(millis: u64) -> String {
+	let duration = Duration::milliseconds(millis as i64);
+	format!("{:02}:{:02}:{:02}", duration.num_hours(), duration.num_minutes(), duration.num_seconds())
 }
