@@ -1,5 +1,4 @@
 use std::cmp::max;
-use std::num::ParseIntError;
 use std::sync::Arc;
 
 use lavalink_rs::gateway::LavalinkEventHandler;
@@ -54,6 +53,7 @@ pub(crate) struct LavalinkHandler;
 impl LavalinkEventHandler for LavalinkHandler {
 	async fn track_start(&self, _client: LavalinkClient, event: TrackStart) {
 		println!("Track started!\nGuild: {}", event.guild_id);
+		//Use the data inside the Node Struct to store a Channel ID in the data Typemap field
 	}
 
 	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
@@ -300,6 +300,31 @@ async fn clear(ctx: &Context, msg: &Message) -> CommandResult {
 	} else {
 		msg.reply(&ctx.http, "Not in a channel").await?;
 	}
+
+
+	Ok(())
+}
+
+#[command]
+async fn pause(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+	let guild_id = u64::from(msg.guild_id.unwrap());
+
+	lava_client.pause(guild_id).await?;
+
+
+	Ok(())
+}
+
+#[command]
+#[aliases("resume")]
+async fn unpause(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+	let guild_id = u64::from(msg.guild_id.unwrap());
+
+	lava_client.resume(guild_id).await?;
 
 
 	Ok(())
