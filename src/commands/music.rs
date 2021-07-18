@@ -161,7 +161,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 		let data = ctx.data.read().await;
 		let lava_client = data.get::<Lavalink>().unwrap().clone();
 
-		let query_information = lava_client.auto_search_tracks(&query).await?;
+		let query_information = lava_client.get_tracks(&query).await?;
 
 		if query_information.tracks.is_empty() {
 			msg.channel_id
