@@ -20,7 +20,6 @@ use songbird::{
 };
 use chrono::Duration;
 use crate::commands::queue::Queue;
-use std::io::Read;
 
 
 struct TrackEndNotifier {
@@ -64,6 +63,12 @@ impl LavalinkEventHandler for LavalinkHandler {
 		println!("Track started!\nGuild: {}", event.guild_id);
 		//Use the data inside the Node Struct to store a Channel ID in the data Typemap field
 		if let Some(node) = client.nodes().await.get(&event.guild_id) {
+			if let Some(queue) = node.data.write().await.get_mut::<Queue>() {
+
+			}
+
+
+
 			if let Some(caller_channel) = node.data.read().await.get::<CallerChannel>() {
 				if let Err(why) = caller_channel.channel.say(
 					&caller_channel.http,
@@ -110,19 +115,19 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 			let lava_client = data.get::<Lavalink>().unwrap().clone();
 			lava_client.create_session(&connection_info).await?;
 
-			println!("before");
-			if let Some(node) = lava_client.nodes().await.get(guild_id.as_u64()) {
-				set_reply_channel(&node, msg.channel_id, ctx.http.clone()).await;
-				node.data.write().await.insert::<Queue>(Queue::new());
-				println!("inside");
+			{
+				let client_lock = lava_client.inner.lock().await;
+				client_lock.nodes.insert(guild_id.0, Node::default());
+				{
+					let node = client_lock.nodes.get(guild_id.as_u64()).unwrap();
+					let mut typemap = node.data.write().await;
+					typemap.insert::<Queue>(Queue::new());
+					//set_reply_channel(&node, msg.channel_id, ctx.http.clone()).await;
+				}
 			}
-
-			println!("after");
 			msg.channel_id
 				.say(&ctx.http, &format!("Joined {}", connect_to.mention()))
 				.await?;
-
-
 		}
 		Err(why) => {
 			msg.channel_id
@@ -200,31 +205,31 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 				.await?;
 			return Ok(());
 		}
-
-		for track in &query_information.tracks {
-			if let Err(why) =
-
-			&lava_client.play(guild_id, track.clone())
-				// Change this to play() if you want your own custom queue or no queue at all.
-				.queue()
-				.await
-			{
-				eprintln!("{}", why);
-				return Ok(());
-			};
-
-		}
-		println!("Before");
+		//
+		// for track in &query_information.tracks {
+		// 	if let Err(why) =
+		//
+		// 	&lava_client.play(guild_id, track.clone())
+		// 		// Change this to play() if you want your own custom queue or no queue at all.
+		// 		.queue()
+		// 		.await
+		// 	{
+		// 		eprintln!("{}", why);
+		// 		return Ok(());
+		// 	};
+		//
+		// }
+		println!("Before play");
 		if let Some(node) = lava_client.nodes().await.get(guild_id.as_u64()) {
 			set_reply_channel(&node, msg.channel_id, ctx.http.clone()).await;
 			let mut typemap = node.data.write().await;
 			let queue = typemap.get_mut::<Queue>().unwrap();
 
 			queue.add_all(&mut query_information.tracks);
-
-			lava_client.play(guild_id, queue.next().unwrap()); //We can unwrap because we just added at least one track a moment earlier
+			println!("inside play");
+			lava_client.play(guild_id, queue.next().unwrap()).start().await; //We can unwrap because we just added at least one track a moment earlier
 		}
-		println!("after");
+
 
 		msg.channel_id
 			.say(
@@ -281,24 +286,28 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
 	let lava_client = data.get::<Lavalink>().unwrap().clone();
 
 	if let Some(node) = lava_client.nodes().await.get(&msg.guild_id.unwrap().0) {
-		if let Some(track) = &node.now_playing {
-			msg.channel_id.send_message(
-				&ctx.http,
-				|message| {
-					message.embed(|embed| {
-						embed.field("Title: ", &track.track.info.as_ref().unwrap().title, false)
-							.field("Link: ", &track.track.info.as_ref().unwrap().uri, false)
-							.field("Duration: ", format_millis(track.track.info.as_ref().unwrap().length), false)
-					}
-					)
-				},
-			)
-				.await?;
-		} else {
-			msg.channel_id
-				.say(&ctx.http, "Nothing is playing at the moment.")
-				.await?;
+		if let Some(queue) = node.data.write().await.get_mut::<Queue>() {
+			if let Some(track) = queue.get_playing() {
+				msg.channel_id.send_message(
+					&ctx.http,
+					|message| {
+						message.embed(|embed| {
+							embed.field("Title: ", &track.info.as_ref().unwrap().title, false)
+								.field("Link: ", &track.info.as_ref().unwrap().uri, false)
+								.field("Duration: ", format_millis(track.info.as_ref().unwrap().length), false)
+						}
+						)
+					},
+				)
+					.await?;
+			} else {
+				msg.channel_id
+					.say(&ctx.http, "Nothing is playing at the moment.")
+					.await?;
+			}
 		}
+
+
 	} else {
 		msg.channel_id
 			.say(&ctx.http, "Nothing is playing at the moment.")
