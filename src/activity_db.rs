@@ -67,12 +67,6 @@ impl ActivityDb {
 			.execute(connection_pool)
 			.await;
 
-		println!("{}", if let Err(why) = result {
-			format!("{}", why)
-		} else {
-			"no error".to_string()
-		});
-
 		Ok(())
 	}
 
