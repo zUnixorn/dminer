@@ -62,17 +62,27 @@ impl LavalinkEventHandler for LavalinkHandler {
 	async fn track_start(&self, client: LavalinkClient, event: TrackStart) {
 		println!("Track started!\nGuild: {}", event.guild_id);
 		//Use the data inside the Node Struct to store a Channel ID in the data Typemap field
+		// if let Some(node) = client.nodes().await.get(&event.guild_id) {
+		// 	if let Some(queue) = node.data.write().await.get_mut::<Queue>() {
+		// 		if let Some(next_track) = queue.get_playing() {
+		// 			if let Err(why) = caller_channel.channel.say(
+		// 				&caller_channel.http,
+		// 				format!("Now playing: {}", &node.now_playing.as_ref().unwrap().track.info.as_ref().unwrap().title)
+		// 			).await {
+		// 				eprintln!("{:?}", why)
+		// 			}
+		// 		}
+		// 	}
+		// }
 		if let Some(node) = client.nodes().await.get(&event.guild_id) {
-			if let Some(queue) = node.data.write().await.get_mut::<Queue>() {
+			let typemap = node.data.read().await;
+			let queue = typemap.get::<Queue>().unwrap();
+			if let Some(current_track) = queue.get_playing() {
+				let caller_channel = typemap.get::<CallerChannel>().unwrap();
 
-			}
-
-
-
-			if let Some(caller_channel) = node.data.read().await.get::<CallerChannel>() {
 				if let Err(why) = caller_channel.channel.say(
 					&caller_channel.http,
-					format!("Now playing: {}", &node.now_playing.as_ref().unwrap().track.info.as_ref().unwrap().title)
+					format!("Now playing: {}", current_track.info.as_ref().unwrap().title)
 				).await {
 					eprintln!("{:?}", why)
 				}
@@ -80,7 +90,18 @@ impl LavalinkEventHandler for LavalinkHandler {
 		}
 	}
 
-	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
+	async fn track_finish(&self, client: LavalinkClient, event: TrackFinish) {
+		if let Some(node) = client.nodes().await.get(&event.guild_id) {
+			let mut typemap = node.data.write().await;
+			let queue = typemap.get_mut::<Queue>().unwrap();
+			if let Some(track) = queue.next() {
+				if let Err(why) = client.play(event.guild_id, track).start().await {
+					eprint!("{:?}", why)
+				}
+			}
+		}
+
+
 		println!("Track finished!\nGuild: {}", event.guild_id);
 		println!("Track finish reason: {}", event.reason);
 	}
@@ -120,9 +141,11 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 				client_lock.nodes.insert(guild_id.0, Node::default());
 				{
 					let node = client_lock.nodes.get(guild_id.as_u64()).unwrap();
+
+					set_reply_channel(&node, msg.channel_id, ctx.http.clone()).await;
+					let node = client_lock.nodes.get(guild_id.as_u64()).unwrap();
 					let mut typemap = node.data.write().await;
 					typemap.insert::<Queue>(Queue::new());
-					//set_reply_channel(&node, msg.channel_id, ctx.http.clone()).await;
 				}
 			}
 			msg.channel_id
@@ -227,7 +250,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
 			queue.add_all(&mut query_information.tracks);
 			println!("inside play");
-			lava_client.play(guild_id, queue.next().unwrap()).start().await; //We can unwrap because we just added at least one track a moment earlier
+			lava_client.play(guild_id, queue.next().unwrap()).start().await?; //We can unwrap because we just added at least one track a moment earlier
 		}
 
 
@@ -255,7 +278,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();
-	let guild_id = msg.guild_id.unwrap();
+	// let guild_id = msg.guild_id.unwrap();
 
 	// if let Some(track) = lava_client.skip(msg.guild_id.unwrap()).await {
 	// 	msg.channel_id
@@ -269,13 +292,13 @@ async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
 	// }
 
 	lava_client.stop(msg.guild_id.unwrap()).await?;
-	if let Some(node) = lava_client.nodes().await.get(guild_id.as_u64()) {
-		let mut typemap = node.data.write().await;
-		let queue = typemap.get_mut::<Queue>().unwrap();
-		if let Some(track) = queue.next() {
-			lava_client.play(guild_id, track);
-		}
-	}
+	// if let Some(node) = lava_client.nodes().await.get(guild_id.as_u64()) {
+	// 	let mut typemap = node.data.write().await;
+	// 	let queue = typemap.get_mut::<Queue>().unwrap();
+	// 	if let Some(track) = queue.next() {
+	// 		lava_client.play(guild_id, track);
+	// 	}
+	// }
 
 	Ok(())
 }
@@ -329,22 +352,34 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 		max(page_number, 1)
 	};
 
-
-	let mut page_content = String::new();
 	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
-		let queue = &node.queue;
-		for i in (15 * (page - 1))..(15 * page) {
-			if i >= queue.len() { break; } //Stop the loop at the end of the Vector
-			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
-		}
-		page_content.push_str(&format!("\n\nPage {} of {}", page, ((queue.len()) / 15) + 1)) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
-	};
+		let typemap = node.data.read().await;
+		let queue = typemap.get::<Queue>().unwrap();
+		let page_content = queue.get_page(page);
 
-	msg.channel_id.send_message(&ctx.http, |msg| {
-		msg.embed(|embed| {
-			embed.description(page_content)
-		})
-	}).await?;
+		msg.channel_id.send_message(&ctx.http, |msg| {
+			msg.embed(|embed| {
+				embed.description(page_content)
+			})
+		}).await?;
+	} else {
+		msg.channel_id.say(&ctx.http, "Not playing any music").await?;
+	}
+
+	// if let Some(node) = lava_client.nodes().await.get(&guild_id) {
+	// 	let queue = &node.queue;
+	// 	for i in (15 * (page - 1))..(15 * page) {
+	// 		if i >= queue.len() { break; } //Stop the loop at the end of the Vector
+	// 		page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
+	// 	}
+	// 	page_content.push_str(&format!("\n\nPage {} of {}", page, ((queue.len()) / 15) + 1)) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
+	// };
+
+	// msg.channel_id.send_message(&ctx.http, |msg| {
+	// 	msg.embed(|embed| {
+	// 		embed.description(page_content)
+	// 	})
+	// }).await?;
 
 
 	Ok(())
