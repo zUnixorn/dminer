@@ -3,15 +3,19 @@ use std::sync::Arc;
 
 use lavalink_rs::gateway::LavalinkEventHandler;
 use lavalink_rs::LavalinkClient;
-use lavalink_rs::model::{TrackFinish, TrackStart, Node};
-use serenity::{async_trait, framework::{
-	standard::{
-		Args, CommandResult,
-		macros::command,
+use lavalink_rs::model::{TrackFinish, TrackStart};
+use serenity::{
+	async_trait,
+	framework::{
+		standard::{
+			Args, CommandResult,
+			macros::command,
+		},
 	},
-}, model::channel::Message};
+	model::{channel::Message},
+};
 use serenity::http::Http;
-use serenity::model::prelude::{ChannelId};
+use serenity::model::prelude::ChannelId;
 use serenity::prelude::*;
 use songbird::{
 	Event,
@@ -19,8 +23,6 @@ use songbird::{
 	EventHandler as VoiceEventHandler,
 };
 use chrono::Duration;
-use crate::commands::queue::Queue;
-
 
 struct TrackEndNotifier {
 	channel_id: ChannelId,
@@ -46,62 +48,17 @@ impl TypeMapKey for Lavalink {
 	type Value = LavalinkClient;
 }
 
-pub struct CallerChannel {
-	pub channel: ChannelId,
-	pub http: Arc<Http>,
-}
-
-impl TypeMapKey for CallerChannel {
-	type Value = CallerChannel;
-}
-
 pub(crate) struct LavalinkHandler;
 
 #[async_trait]
 impl LavalinkEventHandler for LavalinkHandler {
 	async fn track_start(&self, client: LavalinkClient, event: TrackStart) {
-		println!("Track started!\nGuild: {}", event.guild_id);
 		//Use the data inside the Node Struct to store a Channel ID in the data Typemap field
-		// if let Some(node) = client.nodes().await.get(&event.guild_id) {
-		// 	if let Some(queue) = node.data.write().await.get_mut::<Queue>() {
-		// 		if let Some(next_track) = queue.get_playing() {
-		// 			if let Err(why) = caller_channel.channel.say(
-		// 				&caller_channel.http,
-		// 				format!("Now playing: {}", &node.now_playing.as_ref().unwrap().track.info.as_ref().unwrap().title)
-		// 			).await {
-		// 				eprintln!("{:?}", why)
-		// 			}
-		// 		}
-		// 	}
-		// }
-		if let Some(node) = client.nodes().await.get(&event.guild_id) {
-			let typemap = node.data.read().await;
-			let queue = typemap.get::<Queue>().unwrap();
-			if let Some(current_track) = queue.get_playing() {
-				let caller_channel = typemap.get::<CallerChannel>().unwrap();
 
-				if let Err(why) = caller_channel.channel.say(
-					&caller_channel.http,
-					format!("Now playing: {}", current_track.info.as_ref().unwrap().title)
-				).await {
-					eprintln!("{:?}", why)
-				}
-			}
-		}
+		println!("Track started!\nGuild: {}", event.guild_id);
 	}
 
-	async fn track_finish(&self, client: LavalinkClient, event: TrackFinish) {
-		if let Some(node) = client.nodes().await.get(&event.guild_id) {
-			let mut typemap = node.data.write().await;
-			let queue = typemap.get_mut::<Queue>().unwrap();
-			if let Some(track) = queue.next() {
-				if let Err(why) = client.play(event.guild_id, track).start().await {
-					eprint!("{:?}", why)
-				}
-			}
-		}
-
-
+	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
 		println!("Track finished!\nGuild: {}", event.guild_id);
 		println!("Track finish reason: {}", event.reason);
 	}
@@ -120,7 +77,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 	let connect_to = match channel_id {
 		Some(channel) => channel,
 		None => {
-			msg.reply(ctx, "Please join a voice channel").await?;
+			msg.reply(ctx, "Join a voice channel.").await?;
 
 			return Ok(());
 		}
@@ -136,18 +93,6 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 			let lava_client = data.get::<Lavalink>().unwrap().clone();
 			lava_client.create_session(&connection_info).await?;
 
-			{
-				let client_lock = lava_client.inner.lock().await;
-				client_lock.nodes.insert(guild_id.0, Node::default());
-				{
-					let node = client_lock.nodes.get(guild_id.as_u64()).unwrap();
-
-					set_reply_channel(&node, msg.channel_id, ctx.http.clone()).await;
-					let node = client_lock.nodes.get(guild_id.as_u64()).unwrap();
-					let mut typemap = node.data.write().await;
-					typemap.insert::<Queue>(Queue::new());
-				}
-			}
 			msg.channel_id
 				.say(&ctx.http, &format!("Joined {}", connect_to.mention()))
 				.await?;
@@ -220,39 +165,27 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 		let data = ctx.data.read().await;
 		let lava_client = data.get::<Lavalink>().unwrap().clone();
 
-		let mut query_information = lava_client.get_tracks(&query).await?;
+		let query_information = lava_client.get_tracks(&query).await?;
 
 		if query_information.tracks.is_empty() {
 			msg.channel_id
-				.say(&ctx, "Could not find anything behind the link")
+				.say(&ctx, "Could not find any video of the search query.")
 				.await?;
 			return Ok(());
 		}
-		//
-		// for track in &query_information.tracks {
-		// 	if let Err(why) =
-		//
-		// 	&lava_client.play(guild_id, track.clone())
-		// 		// Change this to play() if you want your own custom queue or no queue at all.
-		// 		.queue()
-		// 		.await
-		// 	{
-		// 		eprintln!("{}", why);
-		// 		return Ok(());
-		// 	};
-		//
-		// }
-		println!("Before play");
-		if let Some(node) = lava_client.nodes().await.get(guild_id.as_u64()) {
-			set_reply_channel(&node, msg.channel_id, ctx.http.clone()).await;
-			let mut typemap = node.data.write().await;
-			let queue = typemap.get_mut::<Queue>().unwrap();
 
-			queue.add_all(&mut query_information.tracks);
-			println!("inside play");
-			lava_client.play(guild_id, queue.next().unwrap()).start().await?; //We can unwrap because we just added at least one track a moment earlier
+		for track in &query_information.tracks {
+			if let Err(why) =
+
+			&lava_client.play(guild_id, track.clone())
+				// Change this to play() if you want your own custom queue or no queue at all.
+				.queue()
+				.await
+			{
+				eprintln!("{}", why);
+				return Ok(());
+			};
 		}
-
 
 		msg.channel_id
 			.say(
@@ -260,8 +193,6 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 				"Added Track(s)",
 			)
 			.await?;
-
-
 	} else {
 		msg.channel_id
 			.say(
@@ -278,27 +209,17 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();
-	// let guild_id = msg.guild_id.unwrap();
 
-	// if let Some(track) = lava_client.skip(msg.guild_id.unwrap()).await {
-	// 	msg.channel_id
-	// 		.say(
-	// 			ctx,
-	// 			format!("Skipped: {}", track.track.info.as_ref().unwrap().title),
-	// 		)
-	// 		.await?;
-	// } else {
-	// 	msg.channel_id.say(ctx, "Nothing to skip.").await?;
-	// }
-
-	lava_client.stop(msg.guild_id.unwrap()).await?;
-	// if let Some(node) = lava_client.nodes().await.get(guild_id.as_u64()) {
-	// 	let mut typemap = node.data.write().await;
-	// 	let queue = typemap.get_mut::<Queue>().unwrap();
-	// 	if let Some(track) = queue.next() {
-	// 		lava_client.play(guild_id, track);
-	// 	}
-	// }
+	if let Some(track) = lava_client.skip(msg.guild_id.unwrap()).await {
+		msg.channel_id
+			.say(
+				ctx,
+				format!("Skipped: {}", track.track.info.as_ref().unwrap().title),
+			)
+			.await?;
+	} else {
+		msg.channel_id.say(ctx, "Nothing to skip.").await?;
+	}
 
 	Ok(())
 }
@@ -309,28 +230,24 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
 	let lava_client = data.get::<Lavalink>().unwrap().clone();
 
 	if let Some(node) = lava_client.nodes().await.get(&msg.guild_id.unwrap().0) {
-		if let Some(queue) = node.data.write().await.get_mut::<Queue>() {
-			if let Some(track) = queue.get_playing() {
-				msg.channel_id.send_message(
-					&ctx.http,
-					|message| {
-						message.embed(|embed| {
-							embed.field("Title: ", &track.info.as_ref().unwrap().title, false)
-								.field("Link: ", &track.info.as_ref().unwrap().uri, false)
-								.field("Duration: ", format_millis(track.info.as_ref().unwrap().length), false)
-						}
-						)
-					},
-				)
-					.await?;
-			} else {
-				msg.channel_id
-					.say(&ctx.http, "Nothing is playing at the moment.")
-					.await?;
-			}
+		if let Some(track) = &node.now_playing {
+			msg.channel_id.send_message(
+				&ctx.http,
+				|message| {
+					message.embed(|embed| {
+						embed.field("Title: ", &track.track.info.as_ref().unwrap().title, false)
+							.field("Link: ", &track.track.info.as_ref().unwrap().uri, false)
+							.field("Duration: ", format_millis(track.track.info.as_ref().unwrap().length), false)
+					}
+					)
+				},
+			)
+				.await?;
+		} else {
+			msg.channel_id
+				.say(&ctx.http, "Nothing is playing at the moment.")
+				.await?;
 		}
-
-
 	} else {
 		msg.channel_id
 			.say(&ctx.http, "Nothing is playing at the moment.")
@@ -352,34 +269,22 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 		max(page_number, 1)
 	};
 
+
+	let mut page_content = String::new();
 	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
-		let typemap = node.data.read().await;
-		let queue = typemap.get::<Queue>().unwrap();
-		let page_content = queue.get_page(page);
+		let queue = &node.queue;
+		for i in ((15 * (page - 1)) + 1)..((15 * page) + 1) {
+			if i >= queue.len() { break; } //Stop the loop at the end of the Vector
+			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
+		}
+		page_content.push_str(&format!("\n\nPage {} of {}", page, ((queue.len()) / 15) + 1)) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
+	};
 
-		msg.channel_id.send_message(&ctx.http, |msg| {
-			msg.embed(|embed| {
-				embed.description(page_content)
-			})
-		}).await?;
-	} else {
-		msg.channel_id.say(&ctx.http, "Not playing any music").await?;
-	}
-
-	// if let Some(node) = lava_client.nodes().await.get(&guild_id) {
-	// 	let queue = &node.queue;
-	// 	for i in (15 * (page - 1))..(15 * page) {
-	// 		if i >= queue.len() { break; } //Stop the loop at the end of the Vector
-	// 		page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
-	// 	}
-	// 	page_content.push_str(&format!("\n\nPage {} of {}", page, ((queue.len()) / 15) + 1)) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
-	// };
-
-	// msg.channel_id.send_message(&ctx.http, |msg| {
-	// 	msg.embed(|embed| {
-	// 		embed.description(page_content)
-	// 	})
-	// }).await?;
+	msg.channel_id.send_message(&ctx.http, |msg| {
+		msg.embed(|embed| {
+			embed.description(page_content)
+		})
+	}).await?;
 
 
 	Ok(())
@@ -427,16 +332,7 @@ async fn unpause(ctx: &Context, msg: &Message) -> CommandResult {
 	Ok(())
 }
 
-async fn set_reply_channel(node: &Node, channel: ChannelId, http: Arc<Http>) {
-	node.data.write().await.insert::<CallerChannel>(
-		CallerChannel {
-			channel,
-			http,
-		}
-	)
-}
-
 fn format_millis(millis: u64) -> String {
 	let duration = Duration::milliseconds(millis as i64);
-	format!("{:02}:{:02}:{:02}", duration.num_hours() % 60, duration.num_minutes() % 60, duration.num_seconds() % 60)
+	format!("{:02}:{:02}:{:02}", duration.num_hours() , duration.num_minutes() % 60, duration.num_seconds() % 60)
 }
