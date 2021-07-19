@@ -323,7 +323,7 @@ async fn clear(ctx: &Context, msg: &Message) -> CommandResult {
 	let guild_id = u64::from(msg.guild_id.unwrap());
 
 	if let Some(mut node) = lava_client.nodes().await.get_mut(&guild_id) {
-		node.queue.clear();
+		node.queue.truncate(1);
 		msg.channel_id.say(&ctx.http, "Cleared queue").await?;
 	} else {
 		msg.reply(&ctx.http, "Not in a channel").await?;
