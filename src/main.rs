@@ -29,7 +29,7 @@ use connection_pool::ConnectionPool;
 use help::*;
 use message_processing::*;
 
-use crate::commands::hate::HateMessageTypeMap;
+use crate::commands::hate::HateMessage;
 use crate::config::ConfigData;
 use crate::handler::Handler;
 
