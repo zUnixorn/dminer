@@ -185,7 +185,7 @@ async fn main() {
 		let hate_messages = hate::load_hate_messages("./hate.json").await;
 		data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
 		data.insert::<ConnectionPool>(connection_pool);
-		data.insert::<HateMessageTypeMap>(hate_messages);
+		data.insert::<HateMessage>(hate_messages);
 		data.insert::<ConfigData>(config_data);
 	}
 
