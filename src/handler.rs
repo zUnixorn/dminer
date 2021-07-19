@@ -123,13 +123,13 @@ impl EventHandler for Handler {
 			).await.unwrap();
 
 		for activity in presence.activities {
-			println!("activity: {}, from user: {}{}",
-					 activity.name,
-					 presence.user_id,
-					 presence.user
-						 .clone()
-						 .map(|o| format!(" ({})", o.name))
-						 .unwrap_or(String::new()));
+			// println!("activity: {}, from user: {}{}",
+			// 		 activity.name,
+			// 		 presence.user_id,
+			// 		 presence.user
+			// 			 .clone()
+			// 			 .map(|o| format!(" ({})", o.name))
+			// 			 .unwrap_or(String::new()));
 
 			ActivityDb::from_activity(activity, i64::from(presence.user_id))
 				.write_to_db(ctx

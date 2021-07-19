@@ -1,9 +1,10 @@
 use std::cmp::max;
 use std::sync::Arc;
 
+use chrono::Duration;
 use lavalink_rs::gateway::LavalinkEventHandler;
 use lavalink_rs::LavalinkClient;
-use lavalink_rs::model::{TrackFinish, TrackStart};
+use lavalink_rs::model::{Node, TrackFinish, TrackStart};
 use serenity::{
 	async_trait,
 	framework::{
@@ -22,11 +23,19 @@ use songbird::{
 	EventContext,
 	EventHandler as VoiceEventHandler,
 };
-use chrono::Duration;
 
 struct TrackEndNotifier {
 	channel_id: ChannelId,
 	http: Arc<Http>,
+}
+
+struct CallerChannel {
+	channel_id: ChannelId,
+	http: Arc<Http>,
+}
+
+impl TypeMapKey for CallerChannel {
+	type Value = CallerChannel;
 }
 
 #[async_trait]
@@ -52,9 +61,23 @@ pub(crate) struct LavalinkHandler;
 
 #[async_trait]
 impl LavalinkEventHandler for LavalinkHandler {
-	async fn track_start(&self, _client: LavalinkClient, event: TrackStart) {
-		println!("Track started!\nGuild: {}", event.guild_id);
+	async fn track_start(&self, client: LavalinkClient, event: TrackStart) {
 		//Use the data inside the Node Struct to store a Channel ID in the data Typemap field
+
+		if let Some(node) = client.nodes().await.get(&event.guild_id) {
+			if let Some(current_track) = &node.now_playing {
+				let typemap = node.data.read().await;
+				let caller_channel = typemap.get::<CallerChannel>().unwrap();
+				let _ = caller_channel.channel_id.say(
+					&caller_channel.http,
+					format!("Now playing {}",
+							current_track.track.info.as_ref().unwrap().title
+					),
+				).await;
+			}
+		}
+
+		println!("Track started!\nGuild: {}", event.guild_id);
 	}
 
 	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
@@ -91,6 +114,10 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 			let data = ctx.data.read().await;
 			let lava_client = data.get::<Lavalink>().unwrap().clone();
 			lava_client.create_session(&connection_info).await?;
+
+			if let Some(node) = lava_client.nodes().await.get(guild_id.as_u64()) {
+				set_caller_channel(&node, ctx.http.clone(), msg.channel_id).await;
+			}
 
 			msg.channel_id
 				.say(&ctx.http, &format!("Joined {}", connect_to.mention()))
@@ -272,7 +299,7 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 	let mut page_content = String::new();
 	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
 		let queue = &node.queue;
-		for i in (15 * (page - 1))..(15 * page) {
+		for i in ((15 * (page - 1)) + 1)..((15 * page) + 1) {
 			if i >= queue.len() { break; } //Stop the loop at the end of the Vector
 			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
 		}
@@ -331,7 +358,16 @@ async fn unpause(ctx: &Context, msg: &Message) -> CommandResult {
 	Ok(())
 }
 
+async fn set_caller_channel(node: &Node, http: Arc<Http>, channel_id: ChannelId) {
+	let mut typemap = node.data.write().await;
+	let caller_channel = CallerChannel {
+		http,
+		channel_id,
+	};
+	typemap.insert::<CallerChannel>(caller_channel);
+}
+
 fn format_millis(millis: u64) -> String {
 	let duration = Duration::milliseconds(millis as i64);
-	format!("{:02}:{:02}:{:02}", duration.num_hours(), duration.num_minutes(), duration.num_seconds())
+	format!("{:02}:{:02}:{:02}", duration.num_hours(), duration.num_minutes() % 60, duration.num_seconds() % 60)
 }

@@ -162,7 +162,7 @@ async fn main() {
 			let lavalink_password = &config_data
 				.music
 				.as_ref()
-				.unwrap()
+				.expect("Lavalink password missing from config")
 				.lavalink_password;
 
 			let lava_client = match LavalinkClient::builder(bot_id)
