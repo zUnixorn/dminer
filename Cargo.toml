@@ -28,9 +28,15 @@ features = ["builtin-queue"]
 optional = true
 
 [dependencies.lavalink-rs]
-version = "0.7.2"
+version = "0.8.0"
 features = ["rustls", "serenity", "andesite"]
 optional = true
+
+#[dependencies.lavalink-rs]
+#git = "https://gitlab.com/vicky5124/lavalink-rs.git"
+#branch = "master"
+#features = ["rustls", "serenity", "andesite"]
+#optional = true
 
 [features]
 default = []

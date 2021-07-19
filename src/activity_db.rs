@@ -51,7 +51,7 @@ impl ActivityDb {
 	*/
 
 	pub async fn write_to_db(&self, connection_pool: &PgPool) -> Result<(), sqlx::Error> {
-		let result = sqlx::query("insert into activities \
+		sqlx::query("insert into activities \
 		(user_id, application_id, assets, details, kind, activity_name, party, state, start_timestamp, end_timestamp) values \
 		($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT DO NOTHING")
 			.bind(self.user_id)
@@ -65,7 +65,7 @@ impl ActivityDb {
 			.bind(self.start_timestamp)
 			.bind(self.end_timestamp)
 			.execute(connection_pool)
-			.await;
+			.await?;
 
 		Ok(())
 	}
