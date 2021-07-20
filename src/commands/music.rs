@@ -299,11 +299,15 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 	let mut page_content = String::new();
 	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
 		let queue = &node.queue;
-		for i in ((15 * (page - 1)) + 1)..((15 * page) + 1) {
-			if i >= queue.len() { break; } //Stop the loop at the end of the Vector
-			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
+		if queue.len() > 1 {
+			for i in ((15 * (page - 1)) + 1)..((15 * page) + 1) {
+				if i >= queue.len() { break; } //Stop the loop at the end of the Vector
+				page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
+			}
+			page_content.push_str(&format!("\n\nPage {} of {}", page, ((queue.len()) / 15) + 1)) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
+		} else {
+			page_content = "Queue is empty".to_string();
 		}
-		page_content.push_str(&format!("\n\nPage {} of {}", page, ((queue.len()) / 15) + 1)) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
 	};
 
 	msg.channel_id.send_message(&ctx.http, |msg| {
