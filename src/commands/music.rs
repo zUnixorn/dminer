@@ -23,6 +23,7 @@ use songbird::{
 	EventContext,
 	EventHandler as VoiceEventHandler,
 };
+use rand::{SeedableRng, Rng};
 
 struct TrackEndNotifier {
 	channel_id: ChannelId,
@@ -99,7 +100,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 	let connect_to = match channel_id {
 		Some(channel) => channel,
 		None => {
-			msg.reply(ctx, "Join a voice channel.").await?;
+			msg.reply(ctx, "Please join a Voice channel before asking me to join.").await?;
 
 			return Ok(());
 		}
@@ -299,11 +300,15 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 	let mut page_content = String::new();
 	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
 		let queue = &node.queue;
-		for i in ((15 * (page - 1)) + 1)..((15 * page) + 1) {
-			if i >= queue.len() { break; } //Stop the loop at the end of the Vector
-			page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
+		if queue.len() > 1 {
+			for i in ((15 * (page - 1)) + 1)..((15 * page) + 1) {
+				if i >= queue.len() { break; } //Stop the loop at the end of the Vector
+				page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
+			}
+			page_content.push_str(&format!("\n\nPage {} of {}", page, (((queue.len() - 1 )as f64) / 15.0).ceil()) )
+		} else {
+			page_content = "Queue is empty".to_string();
 		}
-		page_content.push_str(&format!("\n\nPage {} of {}", page, ((queue.len()) / 15) + 1)) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
 	};
 
 	msg.channel_id.send_message(&ctx.http, |msg| {
@@ -311,6 +316,31 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 			embed.description(page_content)
 		})
 	}).await?;
+
+
+	Ok(())
+}
+
+#[command]
+#[num_args(1)]
+async fn remove(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+
+	if let Some(mut node) = lava_client.nodes().await.get_mut(msg.guild_id.unwrap().as_u64()) {
+		let queue = &mut node.queue;
+		if let Ok(index) = args.single::<usize>() {
+			if index > queue.len() || index < 1 {
+				msg.channel_id.say(&ctx.http, "Invalid queue index").await?;
+			} else {
+				let removed_track = queue.remove(index);
+				msg.channel_id.say(
+					&ctx.http,
+					format!("Removed track `{}` from the queue", removed_track.track.info.unwrap().title),
+				).await?;
+			}
+		}
+	}
 
 
 	Ok(())
@@ -354,6 +384,29 @@ async fn unpause(ctx: &Context, msg: &Message) -> CommandResult {
 
 	lava_client.resume(guild_id).await?;
 	msg.channel_id.say(&ctx.http, "Unpaused player").await?;
+
+	Ok(())
+}
+
+#[command]
+#[aliases("randomize")]
+async fn shuffle(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let lava_client = data.get::<Lavalink>().unwrap().clone();
+	let guild_id = u64::from(msg.guild_id.unwrap());
+	if let Some(mut node) = lava_client.nodes().await.get_mut(&guild_id) {
+		let mut rng = rand::rngs::StdRng::from_entropy();
+
+		for i in 1..node.queue.len() {
+			let random_song_index = rng.gen_range(1..node.queue.len() as i64) as usize;
+			node.queue.swap(i, random_song_index);
+		}
+	}
+
+	msg.channel_id.say(
+		&ctx.http,
+		"Shuffled queue"
+	).await?;
 
 	Ok(())
 }
