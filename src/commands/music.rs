@@ -304,7 +304,7 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 				if i >= queue.len() { break; } //Stop the loop at the end of the Vector
 				page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
 			}
-			page_content.push_str(&format!("\n\nPage {} of {}", page, (((queue.len() - 1 )as f64) / 15.0).ceil()) ) //TODO needs work, if the length of the queue is a multiple of the page size it will display one page too much as total
+			page_content.push_str(&format!("\n\nPage {} of {}", page, (((queue.len() - 1 )as f64) / 15.0).ceil()) )
 		} else {
 			page_content = "Queue is empty".to_string();
 		}
