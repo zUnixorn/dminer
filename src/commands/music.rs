@@ -100,7 +100,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 	let connect_to = match channel_id {
 		Some(channel) => channel,
 		None => {
-			msg.reply(ctx, "Join a voice channel.").await?;
+			msg.reply(ctx, "Please join a Voice channel before asking me to join.").await?;
 
 			return Ok(());
 		}
