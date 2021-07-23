@@ -13,17 +13,15 @@ use serenity::{
 	http::Http,
 };
 use serenity::client::bridge::gateway::GatewayIntents;
-
-#[cfg(feature = "music")]
-use {
-	songbird::SerenityInit,
-	lavalink_rs::{LavalinkClient},
-	crate::music::*,
-};
-
 use sqlx::postgres::PgPoolOptions;
 use tokio;
 
+#[cfg(feature = "music")]
+use {
+	crate::commands::music::handlers::{Lavalink, LavalinkHandler},
+	lavalink_rs::LavalinkClient,
+	songbird::SerenityInit,
+};
 use commands::*;
 use connection_pool::ConnectionPool;
 use help::*;

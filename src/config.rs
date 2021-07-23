@@ -1,20 +1,20 @@
 use std::fs::File;
 use std::io::Read;
 
-use serde::{Deserialize};
+use serde::Deserialize;
 use serenity::prelude::TypeMapKey;
 
 #[derive(Deserialize)]
 pub struct ConfigData {
 	pub general: General,
 	pub database: Database,
-	pub music: Option<Music>
+	pub music: Option<Music>,
 }
 
 #[derive(Deserialize)]
 pub struct General {
 	pub token: String,
-	pub prefix: String
+	pub prefix: String,
 }
 
 #[derive(Deserialize)]
@@ -24,7 +24,7 @@ pub struct Database {
 
 #[derive(Deserialize)]
 pub struct Music {
-	pub lavalink_password: String
+	pub lavalink_password: String,
 }
 
 

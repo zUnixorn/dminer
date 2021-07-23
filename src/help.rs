@@ -10,7 +10,7 @@ use serenity::{
 		CommandResult,
 		help_commands,
 		HelpOptions,
-		macros::{help},
+		macros::help,
 	},
 	model::{
 		channel::Message,
