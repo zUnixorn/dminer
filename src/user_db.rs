@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
-use serenity::model::user::User;
+
 use serenity::model::gateway::Presence;
+use serenity::model::user::User;
 use sqlx::PgPool;
 
 pub struct UserDb {

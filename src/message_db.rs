@@ -5,6 +5,7 @@ use serenity::futures::executor::block_on;
 use serenity::model::channel::Message;
 use serenity::model::user::User;
 use sqlx::PgPool;
+
 use crate::user_db::UserDb;
 
 pub struct MessageDb {

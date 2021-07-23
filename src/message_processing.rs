@@ -12,10 +12,21 @@ use serenity::{
 	},
 };
 
-use crate::commands::{math::*, hate::*, meta::*};
-
+use crate::commands::{hate::*, math::*, meta::*};
 #[cfg(feature = "music")]
-use crate::commands::music::*;
+use crate::music::{
+	clear::*,
+	info::*,
+	join::*,
+	leave::*,
+	pause::*,
+	play::*,
+	queue::*,
+	remove::*,
+	resume::*,
+	shuffle::*,
+	skip::*,
+};
 
 #[group]
 #[commands(ping, latency, hate, deer)]
@@ -51,7 +62,7 @@ pub async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_r
 pub async fn unknown_command(ctx: &Context, msg: &Message, unknown_command_name: &str) {
 	println!("Could not find command named '{}'\n(Message content: \"{}\")", unknown_command_name, msg.content);
 	let reply = msg.channel_id.say(&ctx.http,
-					   format!("Sorry, couldn't find a command named '`{}`'\n\n With the `help` command you can list all available commands", unknown_command_name)
+								   format!("Sorry, couldn't find a command named '`{}`'\n\n With the `help` command you can list all available commands", unknown_command_name),
 	).await;
 
 	if let Err(why) = reply {

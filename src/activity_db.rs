@@ -1,8 +1,9 @@
-use serenity::model::gateway::{ActivityType, Activity};
 use std::time::{SystemTime, UNIX_EPOCH};
-use sqlx::PgPool;
-use crate::activity_kind::ActivityKind;
 
+use serenity::model::gateway::{Activity, ActivityType};
+use sqlx::PgPool;
+
+use crate::activity_kind::ActivityKind;
 
 pub struct ActivityDb {
 	user_id: i64,

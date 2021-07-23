@@ -1,12 +1,12 @@
+use std::fmt::{Display, Formatter};
 use std::fs::File;
 
+use rand::{Rng, SeedableRng};
+use serde::Deserialize;
+use serde::Serialize;
 use serenity::framework::standard::{CommandResult, macros::command};
 use serenity::model::prelude::Message;
 use serenity::prelude::{Context, TypeMapKey};
-use rand::{SeedableRng, Rng};
-use std::fmt::{Display, Formatter};
-use serde::Deserialize;
-use serde::Serialize;
 
 #[command]
 #[description("Gives you a nice message by linus torvalds :)")]
@@ -17,7 +17,7 @@ async fn hate(ctx: &Context, msg: &Message) -> CommandResult {
 	let mut rng = rand::rngs::StdRng::from_entropy();
 	let random_number = rng.gen_range(0..messages.len() as i64) as usize;
 
-	msg.channel_id.say(&ctx.http,&messages[random_number]).await?;
+	msg.channel_id.say(&ctx.http, &messages[random_number]).await?;
 
 	Ok(())
 }
