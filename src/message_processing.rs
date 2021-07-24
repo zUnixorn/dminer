@@ -29,7 +29,7 @@ use crate::music::{
 };
 
 #[group]
-#[commands(ping, latency, hate, deer)]
+#[commands(ping, latency, hate, shill)]
 pub struct General;
 
 #[group]
