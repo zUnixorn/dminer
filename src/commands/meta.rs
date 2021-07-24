@@ -52,8 +52,8 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-#[aliases("durr", "deeb", "shill")]
-async fn deer(ctx: &Context, msg: &Message) -> CommandResult {
+#[aliases("durr", "deeb", "deer")]
+async fn shill(ctx: &Context, msg: &Message) -> CommandResult {
 	let file_paths = vec!["assets/deerbot-pfp.png"];
 
 	msg.channel_id.send_files(&ctx.http, file_paths, |message| {
