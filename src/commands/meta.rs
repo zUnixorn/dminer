@@ -53,6 +53,7 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 #[aliases("durr", "deeb", "deer")]
+#[description("Shills the bot of a friend.")]
 async fn shill(ctx: &Context, msg: &Message) -> CommandResult {
 	let file_paths = vec!["assets/deerbot-pfp.png"];
 
