@@ -7,9 +7,9 @@ use crate::commands::music::handlers::Lavalink;
 
 #[command]
 #[aliases("search", "youtube")]
-#[description("Adds a song to the end of the queue. Starts the player if it is not running.\n If the given link is a playlist will add all songs.")]
-#[usage("$link")]
-#[example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
+#[description("Searches for a song on youtube. If it found a track it will add it to the queue and start the player if it is not running")]
+#[usage("$search_query")]
+#[example("Rammstein Rosenrot")]
 async fn youtube_search(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 	let query = args.message().to_string();
 
