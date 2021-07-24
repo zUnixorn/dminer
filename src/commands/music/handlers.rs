@@ -24,11 +24,13 @@ impl LavalinkEventHandler for LavalinkHandler {
 			if let Some(current_track) = &node.now_playing {
 				let typemap = node.data.read().await;
 				let caller_channel = typemap.get::<CallerChannel>().unwrap();
-				let _ = caller_channel.channel_id.say(
-					&caller_channel.http,
-					format!("Now playing `{}`",
-							current_track.track.info.as_ref().unwrap().title
-					),
+				let _ = caller_channel.channel_id.send_message(&caller_channel.http, |message| {
+					message.embed(|embed| {
+						embed.title("**Now playing**");
+						embed.description(format!("{}", current_track.track.info.as_ref().unwrap().title));
+						embed
+					})
+				}
 				).await;
 			}
 		}
