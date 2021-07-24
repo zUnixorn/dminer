@@ -7,6 +7,7 @@ use crate::commands::music::handlers::Lavalink;
 
 #[command]
 #[aliases("fuckoff")]
+#[description("Lets the bot leave from the voice channel.\nCleans up; The queue will get emptied.")]
 async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
 	let guild = msg.guild(&ctx.cache).await.unwrap();
 	let guild_id = guild.id;

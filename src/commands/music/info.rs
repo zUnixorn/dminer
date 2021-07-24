@@ -7,6 +7,7 @@ use crate::commands::music::handlers::Lavalink;
 use crate::commands::music::util::format_millis;
 
 #[command]
+#[description("Gives info about the currently running song.")]
 async fn info(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();

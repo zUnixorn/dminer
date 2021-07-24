@@ -7,6 +7,7 @@ use crate::commands::music::handlers::Lavalink;
 
 #[command]
 #[aliases("resume")]
+#[description("Unpauses the player.")]
 async fn unpause(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();

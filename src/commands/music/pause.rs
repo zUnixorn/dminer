@@ -6,6 +6,7 @@ use serenity::prelude::Context;
 use crate::commands::music::handlers::Lavalink;
 
 #[command]
+#[description("Pauses the player. Still pauses if no song is currently running.")]
 async fn pause(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();

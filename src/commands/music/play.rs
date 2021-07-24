@@ -7,6 +7,7 @@ use crate::commands::music::handlers::Lavalink;
 
 #[command]
 #[description("Adds a song to the end of the queue. Starts the player if it is not running.\n If the given link is a playlist will add all songs.")]
+#[usage("$link")]
 #[example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
 async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 	let query = args.message().to_string();

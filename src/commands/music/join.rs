@@ -13,6 +13,7 @@ use crate::commands::music::handlers::Lavalink;
 use crate::commands::music::util::set_caller_channel;
 
 #[command]
+#[description("Lets the bot join into your voice channel.")]
 async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 	let guild = msg.guild(&ctx.cache).await.unwrap();
 	let guild_id = guild.id;

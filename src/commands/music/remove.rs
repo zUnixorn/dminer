@@ -7,6 +7,10 @@ use crate::commands::music::handlers::Lavalink;
 
 #[command]
 #[num_args(1)]
+#[description("Removes a song from the queue.\nIt is recommended to first use the queue command to view the queued songs and their indexes.")]
+#[usage("$queue_index")]
+#[example("7")]
+#[example("4")]
 async fn remove(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();
