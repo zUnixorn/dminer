@@ -5,7 +5,8 @@ use serenity::prelude::Context;
 //TODO: Proper Error reply
 #[command]
 #[aliases("repl")]
-#[description("Evaluates a given mathematical expression\nExample: eval 2 - 3 * log(24/3) ^ 5")]
+#[description("Evaluates a given mathematical expression")]
+#[example("2 - 3 * log(24/3) ^ 5")]
 pub async fn eval(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 	let mut namespace = fasteval::EmptyNamespace; //no variables therefore empty namespace
 

@@ -6,6 +6,7 @@ use serenity::prelude::Context;
 use crate::commands::music::handlers::Lavalink;
 
 #[command]
+#[description("Clears the contents of the queue")]
 async fn clear(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();

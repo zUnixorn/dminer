@@ -8,6 +8,7 @@ use crate::commands::music::handlers::Lavalink;
 
 #[command]
 #[aliases("randomize")]
+#[description("Randomizes the order of the songs in the queue")]
 async fn shuffle(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();

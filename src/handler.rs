@@ -18,12 +18,13 @@ impl EventHandler for Handler {
 	async fn message(&self, ctx: Context, message: Message) {
 		println!("Message by: {} with content: {}", message.author.name, message.content);
 		let msg = MessageDb::from_message(message);
-		let result = msg.write_to_db(ctx
-										 .data
-										 .read()
-										 .await
-										 .get::<ConnectionPool>()
-										 .unwrap() //if it's not there the world is burning anyways
+		let result = msg.write_to_db(
+			ctx
+				.data
+				.read()
+				.await
+				.get::<ConnectionPool>()
+				.unwrap() //if it's not there the world is burning anyways
 		).await;
 
 		if let Err(why) = result {
@@ -39,13 +40,14 @@ impl EventHandler for Handler {
 		_guild_id: Option<GuildId>,
 	) {
 		println!("Message with id {} was deleted", deleted_message_id);
-		let result = MessageDb::mark_deleted(i64::from(deleted_message_id),
-											 ctx
-												 .data
-												 .read()
-												 .await
-												 .get::<ConnectionPool>()
-												 .unwrap(),
+		let result = MessageDb::mark_deleted(
+			i64::from(deleted_message_id),
+			ctx
+				.data
+				.read()
+				.await
+				.get::<ConnectionPool>()
+				.unwrap(),
 		).await;
 
 		if let Err(why) = result {

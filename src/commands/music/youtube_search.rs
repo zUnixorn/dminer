@@ -6,10 +6,11 @@ use serenity::prelude::Context;
 use crate::commands::music::handlers::Lavalink;
 
 #[command]
-#[description("Adds a song to the end of the queue. Starts the player if it is not running.\n If the given link is a playlist will add all songs.")]
-#[usage("$link")]
-#[example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
-async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+#[aliases("search", "youtube")]
+#[description("Searches for a song on youtube. If it found a track it will add it to the queue and start the player if it is not running")]
+#[usage("$search_query")]
+#[example("Rammstein Rosenrot")]
+async fn youtube_search(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 	let query = args.message().to_string();
 
 	let guild_id = match ctx.cache.guild_channel(msg.channel_id).await {
@@ -29,7 +30,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 		let data = ctx.data.read().await;
 		let lava_client = data.get::<Lavalink>().unwrap().clone();
 
-		let query_information = lava_client.get_tracks(&query).await?;
+		let query_information = lava_client.auto_search_tracks(&query).await?;
 
 		if query_information.tracks.is_empty() {
 			msg.channel_id
@@ -38,23 +39,23 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 			return Ok(());
 		}
 
-		for track in &query_information.tracks {
-			if let Err(why) =
+		let track = &query_information.tracks[0];
+		if let Err(why) =
 
-			&lava_client.play(guild_id, track.clone())
-				// Change this to play() if you want your own custom queue or no queue at all.
-				.queue()
-				.await
-			{
-				eprintln!("{}", why);
-				return Ok(());
-			};
-		}
+		&lava_client.play(guild_id, track.clone())
+			// Change this to play() if you want your own custom queue or no queue at all.
+			.queue()
+			.await
+		{
+			eprintln!("{}", why);
+			return Ok(());
+		};
+
 
 		msg.channel_id
 			.say(
 				&ctx.http,
-				"Added Track(s)",
+				format!("Added track `{}`", track.info.as_ref().unwrap().title),
 			)
 			.await?;
 	} else {

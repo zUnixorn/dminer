@@ -13,6 +13,7 @@ use serenity::{
 };
 
 use crate::commands::{hate::*, math::*, meta::*};
+
 #[cfg(feature = "music")]
 use crate::music::{
 	clear::*,
@@ -26,10 +27,11 @@ use crate::music::{
 	resume::*,
 	shuffle::*,
 	skip::*,
+	youtube_search::*,
 };
 
 #[group]
-#[commands(ping, latency, hate, deer)]
+#[commands(ping, latency, hate, shill)]
 pub struct General;
 
 #[group]
@@ -40,7 +42,7 @@ struct Math;
 #[cfg(feature = "music")]
 #[group]
 #[only_in(guilds)]
-#[commands(join, leave, play, skip, info, queue, clear, pause, unpause, remove, shuffle)]
+#[commands(join, leave, play, skip, info, queue, clear, pause, unpause, remove, shuffle, youtube_search)]
 pub struct Music;
 
 #[hook]

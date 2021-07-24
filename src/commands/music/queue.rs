@@ -14,6 +14,10 @@ use serenity::prelude::Context;
 use crate::commands::music::handlers::Lavalink;
 
 #[command]
+#[description("Displays the songs that are currently queued, split up into pages of 15 songs per page.")]
+#[usage("$page")]
+#[example("")]
+#[example("2")]
 async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 	let data = ctx.data.read().await;
 	let lava_client = data.get::<Lavalink>().unwrap().clone();
