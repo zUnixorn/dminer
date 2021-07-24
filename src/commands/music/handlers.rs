@@ -26,7 +26,7 @@ impl LavalinkEventHandler for LavalinkHandler {
 				let caller_channel = typemap.get::<CallerChannel>().unwrap();
 				let _ = caller_channel.channel_id.say(
 					&caller_channel.http,
-					format!("Now playing {}",
+					format!("Now playing `{}`",
 							current_track.track.info.as_ref().unwrap().title
 					),
 				).await;
