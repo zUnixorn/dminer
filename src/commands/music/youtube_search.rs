@@ -55,7 +55,7 @@ async fn youtube_search(ctx: &Context, msg: &Message, args: Args) -> CommandResu
 		msg.channel_id
 			.say(
 				&ctx.http,
-				"Added Track(s)",
+				format!("Added track `{}`", track.info.as_ref().unwrap().title),
 			)
 			.await?;
 	} else {
