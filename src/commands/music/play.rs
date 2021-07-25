@@ -39,6 +39,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 		}
 
 		for track in &query_information.tracks {
+			log::trace!("Queueing track {:?}", track);
 			if let Err(why) =
 
 			&lava_client.play(guild_id, track.clone())
@@ -46,7 +47,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 				.queue()
 				.await
 			{
-				log::error!("An error in the play command occurred: {:?}", why);
+				log::error!("An error occurred: {:?}", why);
 				return Ok(());
 			};
 		}

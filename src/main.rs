@@ -165,6 +165,7 @@ async fn main() {
 
 	#[cfg(feature = "music")]
 		{
+			log::info!("Music feature active");
 			let lavalink_password = &config_data
 				.music
 				.as_ref()

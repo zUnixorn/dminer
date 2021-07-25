@@ -47,7 +47,7 @@ async fn youtube_search(ctx: &Context, msg: &Message, args: Args) -> CommandResu
 			.queue()
 			.await
 		{
-			log::error!("An error in command youtube-search occurred: {:?}", why);
+			log::error!("An error occurred: {:?}", why);
 			return Ok(());
 		};
 

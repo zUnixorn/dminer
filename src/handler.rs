@@ -16,7 +16,7 @@ pub struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
 	async fn message(&self, ctx: Context, message: Message) {
-		log::info!("Message by: {} with content: {}", message.author.name, message.content);
+		// log::info!("Message by: {} with content: {}", message.author.name, message.content);
 		let msg = MessageDb::from_message(message);
 		let result = msg.write_to_db(
 			ctx
@@ -113,6 +113,8 @@ impl EventHandler for Handler {
 		&self, ctx: Context,
 		new_data: PresenceUpdateEvent,
 	) {
+		log::debug!("Got presence update");
+
 		let presence = new_data.presence;
 
 		UserDb::from_presence(presence.clone())

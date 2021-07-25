@@ -18,6 +18,7 @@ async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
 				lava_client.stop(guild_id).await?;
 			}
 		}
+		log::debug!("Skipped: {}", track.track.info.as_ref().unwrap().title);
 		msg.channel_id
 			.say(
 				ctx,
