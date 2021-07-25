@@ -31,9 +31,9 @@ use message_processing::*;
 
 use crate::commands::hate::HateMessage;
 use crate::config::ConfigData;
-use crate::handler::Handler;
+use crate::custom_event_handlers::Handler;
 
-mod handler;
+mod custom_event_handlers;
 mod user_db;
 mod activity_db;
 mod message_db;
@@ -68,7 +68,7 @@ async fn main() {
 		.connect(&config_data.database.database_url)
 		.await
 		.expect("Error while connecting to database");
-
+	log::info!("Connected to the database");
 
 	let http = Http::new_with_token(&config_data.general.token);
 
