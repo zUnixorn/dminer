@@ -113,7 +113,7 @@ impl EventHandler for Handler {
 		&self, ctx: Context,
 		new_data: PresenceUpdateEvent,
 	) {
-		log::debug!("Got presence update");
+		log::trace!("Got presence update"); //Now, you might think this should be level Debug maybe. Thing is, there are presence updates sometimes multiple times a second, it just gets waaaaay too spammy
 
 		let presence = new_data.presence;
 
