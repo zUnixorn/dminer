@@ -46,7 +46,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 				.queue()
 				.await
 			{
-				log::error!("An error in the play command occurred: {:?}", why);
+				log::error!("An error occurred: {:?}", why);
 				return Ok(());
 			};
 		}
