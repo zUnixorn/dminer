@@ -31,7 +31,7 @@ use crate::music::{
 };
 
 #[group]
-#[commands(ping, latency, hate, shill)]
+#[commands(ping, latency, hate, shill, invite)]
 pub struct General;
 
 #[group]
