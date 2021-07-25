@@ -30,17 +30,16 @@ impl LavalinkEventHandler for LavalinkHandler {
 						embed.description(format!("{}", current_track.track.info.as_ref().unwrap().title));
 						embed
 					})
-				}
+				},
 				).await;
 			}
 		}
 
-		println!("Track started!\nGuild: {}", event.guild_id);
+		log::info!("A track in guild {} was started!", event.guild_id)
 	}
 
 	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
-		println!("Track finished!\nGuild: {}", event.guild_id);
-		println!("Track finish reason: {}", event.reason);
+		log::info!("Track in guild {} finished with reason {}", event.guild_id, event.reason)
 	}
 }
 
