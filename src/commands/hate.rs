@@ -41,7 +41,9 @@ impl Display for HateMessage {
 
 
 pub async fn load_hate_messages(path_to_hate_file: &str) -> Vec<HateMessage> {
+	log::debug!("Reading hate json");
 	let file = File::open(path_to_hate_file).expect("Hate json not found");
+	log::debug!("Parsing hate json");
 	let hate_messages: Vec<HateMessage> = serde_json::from_reader(file).expect("Error parsing hate json");
 
 

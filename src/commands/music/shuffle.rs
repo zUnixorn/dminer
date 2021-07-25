@@ -19,6 +19,7 @@ async fn shuffle(ctx: &Context, msg: &Message) -> CommandResult {
 		for i in 1..node.queue.len() {
 			let random_song_index = rng.gen_range(1..node.queue.len() as i64) as usize;
 			node.queue.swap(i, random_song_index);
+			log::trace!("Swapped {} with track {}", i, random_song_index);
 		}
 	}
 
