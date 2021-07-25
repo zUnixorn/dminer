@@ -5,6 +5,7 @@ use serenity::{
 };
 use serenity::model::event::MessageUpdateEvent;
 use serenity::model::id::{ChannelId, GuildId, MessageId};
+use serenity::model::prelude::Guild;
 
 use crate::activity_db::ActivityDb;
 use crate::connection_pool::ConnectionPool;
@@ -135,6 +136,17 @@ impl EventHandler for Handler {
 					.get::<ConnectionPool>()
 					.unwrap()
 				).await.unwrap();
+		}
+	}
+
+	async fn guild_create(
+		&self,
+		_ctx: Context,
+		guild: Guild,
+		is_new: bool,
+	) {
+		if is_new {
+			log::info!("Got invited into a new guild with name '{}' and id '{}'", guild.name, guild.id,)
 		}
 	}
 
