@@ -6,11 +6,31 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 
 use crate::ShardManagerContainer;
+use crate::config::ConfigData;
 
 #[command]
 #[description("Replies with \"Pong!\"")]
 pub async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 	msg.reply(&ctx.http, "Pong!").await?;
+
+	Ok(())
+}
+
+#[command]
+#[description("Gives a link to invite the bot")]
+pub async fn invite(ctx: &Context, msg: &Message) -> CommandResult {
+	let data = ctx.data.read().await;
+	let config_data = data.get::<ConfigData>().unwrap();
+	let invite_url = &config_data.general.invite_url;
+
+	msg.channel_id.send_message(&ctx.http, |message| {
+		message.embed(|embed|{
+			embed.title("Let me join your server :)");
+			embed.url(invite_url);
+			embed
+		})
+	}).await?;
+
 
 	Ok(())
 }

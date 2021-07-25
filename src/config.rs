@@ -15,6 +15,7 @@ pub struct ConfigData {
 pub struct General {
 	pub token: String,
 	pub prefix: String,
+	pub invite_url: String,
 }
 
 #[derive(Deserialize)]
@@ -34,6 +35,7 @@ impl TypeMapKey for ConfigData {
 
 
 pub fn read_config() -> ConfigData {
+	log::debug!("Reading config file");
 	let mut config_file = File::open("./config.toml").expect("Configuration file not found");
 	let mut config_content = String::new();
 	config_file.read_to_string(&mut config_content).unwrap();
