@@ -16,7 +16,7 @@ pub struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
 	async fn message(&self, ctx: Context, message: Message) {
-		println!("Message by: {} with content: {}", message.author.name, message.content);
+		log::info!("Message by: {} with content: {}", message.author.name, message.content);
 		let msg = MessageDb::from_message(message);
 		let result = msg.write_to_db(
 			ctx
@@ -28,7 +28,7 @@ impl EventHandler for Handler {
 		).await;
 
 		if let Err(why) = result {
-			println!("Error writing message to DB: {:?}", why)
+			log::error!("Error writing message to DB: {:?}", why)
 		}
 	}
 
@@ -39,7 +39,7 @@ impl EventHandler for Handler {
 		deleted_message_id: MessageId,
 		_guild_id: Option<GuildId>,
 	) {
-		println!("Message with id {} was deleted", deleted_message_id);
+		log::info!("Message with id {} was deleted", deleted_message_id);
 		let result = MessageDb::mark_deleted(
 			i64::from(deleted_message_id),
 			ctx
@@ -51,7 +51,7 @@ impl EventHandler for Handler {
 		).await;
 
 		if let Err(why) = result {
-			println!("Error writing message to DB: {:?}", why)
+			log::error!("Error writing message to DB: {:?}", why)
 		}
 	}
 
@@ -62,10 +62,10 @@ impl EventHandler for Handler {
 		multiple_deleted_messages_ids: Vec<MessageId>,
 		_guild_id: Option<GuildId>,
 	) {
-		println!("Bulk delete incoming:\n{:?}", multiple_deleted_messages_ids);
+		log::debug!("Bulk delete incoming:\n{:?}", multiple_deleted_messages_ids);
 
 		for deleted_message_id in multiple_deleted_messages_ids {
-			println!("Message with id {} was deleted", deleted_message_id);
+			log::trace!("[In loop]: Message with id {} was deleted", deleted_message_id);
 			let result = MessageDb::mark_deleted(
 				i64::from(deleted_message_id),
 				ctx
@@ -77,7 +77,7 @@ impl EventHandler for Handler {
 			).await;
 
 			if let Err(why) = result {
-				println!("Error writing message to DB: {:?}", why)
+				log::error!("Error writing message to DB: {:?}", why)
 			}
 		}
 	}
@@ -99,13 +99,13 @@ impl EventHandler for Handler {
 				.get::<ConnectionPool>()
 				.unwrap(),
 			).await;
-			println!("Message with id {} got updated. New Content: {}", &message_id, &content);
+			log::info!("Message with id {} got updated. New Content: {}", &message_id, &content);
 
 			if let Err(why) = result {
-				println!("Error writing message to DB: {:?}", why)
+				log::error!("Error writing message to DB: {:?}", why)
 			}
 		} else {
-			println!("Content from modified message absent")
+			log::debug!("Content from modified message absent")
 		}
 	}
 
@@ -125,14 +125,6 @@ impl EventHandler for Handler {
 			).await.unwrap();
 
 		for activity in presence.activities {
-			// println!("activity: {}, from user: {}{}",
-			// 		 activity.name,
-			// 		 presence.user_id,
-			// 		 presence.user
-			// 			 .clone()
-			// 			 .map(|o| format!(" ({})", o.name))
-			// 			 .unwrap_or(String::new()));
-
 			ActivityDb::from_activity(activity, i64::from(presence.user_id))
 				.write_to_db(ctx
 					.data
@@ -149,6 +141,6 @@ impl EventHandler for Handler {
 		_ctx: Context,
 		data_about_bot: Ready,
 	) {
-		println!("{} está aqui!", data_about_bot.user.name);
+		log::info!("{} está aqui!", data_about_bot.user.name)
 	}
 }

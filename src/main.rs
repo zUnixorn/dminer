@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use log::LevelFilter;
 use serenity::{
 	prelude::*,
 };
@@ -13,6 +14,7 @@ use serenity::{
 	http::Http,
 };
 use serenity::client::bridge::gateway::GatewayIntents;
+use simple_logger::SimpleLogger;
 use sqlx::postgres::PgPoolOptions;
 use tokio;
 
@@ -51,6 +53,12 @@ impl TypeMapKey for ShardManagerContainer {
 
 #[tokio::main]
 async fn main() {
+	SimpleLogger::new()
+		.with_level(LevelFilter::Error)
+		.with_module_level("ledermann", LevelFilter::Debug)
+		.init()
+		.unwrap();
+
 	let config_data = config::read_config();
 
 	//Connect to the Database before connecting to discord - need not start the bot if the DB is down
@@ -188,6 +196,6 @@ async fn main() {
 	}
 
 	if let Err(why) = client.start().await {
-		println!("Client error: {:?}", why);
+		log::error!("Client error: {:?}", why)
 	}
 }

@@ -47,7 +47,7 @@ pub struct Music;
 
 #[hook]
 pub async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
-	println!("Got command '{}' by user '{}'", command_name, msg.author.name);
+	log::info!("Got command '{}' by user '{}'", command_name, msg.author.name);
 
 	true // if `before` returns false, command processing doesn't happen.
 }
@@ -55,26 +55,26 @@ pub async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
 #[hook]
 pub async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_result: CommandResult) {
 	match command_result {
-		Ok(()) => println!("Processed command '{}'", command_name),
-		Err(why) => println!("Command '{}' returned error {:?}", command_name, why),
+		Ok(()) => log::info!("Processed command '{}'", command_name),
+		Err(why) => log::error!("Command returned an error: {:?}", why),
 	}
 }
 
 #[hook]
 pub async fn unknown_command(ctx: &Context, msg: &Message, unknown_command_name: &str) {
-	println!("Could not find command named '{}'\n(Message content: \"{}\")", unknown_command_name, msg.content);
+	log::debug!("Could not find command named '{}'\n(Message content: \"{}\")", unknown_command_name, msg.content);
 	let reply = msg.channel_id.say(&ctx.http,
 								   format!("Sorry, couldn't find a command named '`{}`'\n\n With the `help` command you can list all available commands", unknown_command_name),
 	).await;
 
 	if let Err(why) = reply {
-		println!("Error replying to unknown command: {:?}", why)
+		log::error!("Error replying to unknown command: {:?}", why)
 	}
 }
 
 #[hook]
 pub async fn normal_message(_ctx: &Context, msg: &Message) {
-	println!("Processed non Command message: '{}'", msg.content);
+	log::info!("Processed non Command message: '{}'", msg.content)
 }
 
 #[hook]
