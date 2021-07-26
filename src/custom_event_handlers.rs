@@ -16,6 +16,17 @@ pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
+	async fn guild_create(
+		&self,
+		_ctx: Context,
+		guild: Guild,
+		is_new: bool,
+	) {
+		if is_new {
+			log::info!("Got invited into a new guild with name '{}' and id '{}'", guild.name, guild.id,)
+		}
+	}
+
 	async fn message(&self, ctx: Context, message: Message) {
 		// log::info!("Message by: {} with content: {}", message.author.name, message.content);
 		let msg = MessageDb::from_message(message);
@@ -136,17 +147,6 @@ impl EventHandler for Handler {
 					.get::<ConnectionPool>()
 					.unwrap()
 				).await.unwrap();
-		}
-	}
-
-	async fn guild_create(
-		&self,
-		_ctx: Context,
-		guild: Guild,
-		is_new: bool,
-	) {
-		if is_new {
-			log::info!("Got invited into a new guild with name '{}' and id '{}'", guild.name, guild.id,)
 		}
 	}
 
