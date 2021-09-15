@@ -4,6 +4,7 @@ use serenity::model::prelude::Message;
 use serenity::prelude::Context;
 
 use crate::commands::music::handlers::Lavalink;
+use crate::commands::music::util::is_link;
 
 #[command]
 #[description("Adds a song to the end of the queue. Starts the player if it is not running.\n If the given link is a playlist will add all songs.")]
@@ -11,6 +12,11 @@ use crate::commands::music::handlers::Lavalink;
 #[example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
 async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 	let query = args.message().to_string();
+
+	if !is_link(query.as_str()) {
+		msg.channel_id.say(&ctx.http, "Please give a link as argument").await?;
+		Ok(())
+	}
 
 	let guild_id = match ctx.cache.guild_channel(msg.channel_id).await {
 		Some(channel) => channel.guild_id,
