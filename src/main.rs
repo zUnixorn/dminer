@@ -15,7 +15,6 @@ use serenity::{
 };
 use serenity::client::bridge::gateway::GatewayIntents;
 use simple_logger::SimpleLogger;
-use sqlx::postgres::PgPoolOptions;
 use tokio;
 
 #[cfg(feature = "music")]
@@ -25,7 +24,6 @@ use {
 	songbird::SerenityInit,
 };
 use commands::*;
-use connection_pool::ConnectionPool;
 use help::*;
 use message_processing::*;
 
@@ -34,14 +32,9 @@ use crate::config::ConfigData;
 use crate::custom_event_handlers::Handler;
 
 mod custom_event_handlers;
-mod user_db;
-mod activity_db;
-mod message_db;
-mod connection_pool;
 mod commands;
 mod message_processing;
 mod help;
-mod activity_kind;
 mod config;
 
 
@@ -61,17 +54,7 @@ async fn main() {
 
 	let config_data = config::read_config();
 
-	//Connect to the Database before connecting to discord - need not start the bot if the DB is down
-	let connection_pool = PgPoolOptions::new()
-		.max_connections(5)
-		//.idle_timeout(600)
-		.connect(&config_data.database.database_url)
-		.await
-		.expect("Error while connecting to database");
-	log::info!("Connected to the database");
-
 	let http = Http::new_with_token(&config_data.general.token);
-
 
 	let (owners, bot_id) = match http.get_current_application_info().await {
 		Ok(info) => {
@@ -191,7 +174,6 @@ async fn main() {
 		let mut data = client.data.write().await;
 		let hate_messages = hate::load_hate_messages("./hate.json").await;
 		data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
-		data.insert::<ConnectionPool>(connection_pool);
 		data.insert::<HateMessage>(hate_messages);
 		data.insert::<ConfigData>(config_data);
 	}

@@ -6,9 +6,6 @@ token = 'Your token here'
 prefix = '-'
 invite_url =  'https://discord.com/api/oauth2/authorize?client_id=558412881574494239&permissions=8&scope=bot' # Replace with your invite URL
 
-[database]
-database_url = 'postgres://user:password@localhorst/database'
-
 # Optional for when the music feature is enabled
 # [music]
 # lavalink_password = 'youshallnotpass'

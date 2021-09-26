@@ -7,7 +7,6 @@ use serenity::prelude::TypeMapKey;
 #[derive(Deserialize)]
 pub struct ConfigData {
 	pub general: General,
-	pub database: Database,
 	pub music: Option<Music>,
 }
 
@@ -16,11 +15,6 @@ pub struct General {
 	pub token: String,
 	pub prefix: String,
 	pub invite_url: String,
-}
-
-#[derive(Deserialize)]
-pub struct Database {
-	pub database_url: String,
 }
 
 #[derive(Deserialize)]
