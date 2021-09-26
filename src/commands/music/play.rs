@@ -1,12 +1,16 @@
 use serenity::framework::standard::{Args, CommandResult};
 use serenity::framework::standard::macros::command;
-use serenity::model::prelude::Message;
+use serenity::model::prelude::{Message, GuildId};
 use serenity::prelude::Context;
 
 use crate::commands::music::handlers::Lavalink;
+use crate::commands::music::util::is_link;
+use lavalink_rs::error::LavalinkError;
+use lavalink_rs::LavalinkClient;
+use lavalink_rs::model::Track;
 
 #[command]
-#[description("Adds a song to the end of the queue. Starts the player if it is not running.\n If the given link is a playlist will add all songs.")]
+#[description("Adds a song to the end of the queue. Starts the player if it is not running.\n If the given link is a playlist will add all songs.\n\nIf no link is provided it will search for the given words on youtube")]
 #[usage("$link")]
 #[example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
 async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
@@ -38,18 +42,17 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 			return Ok(());
 		}
 
-		for track in &query_information.tracks {
-			log::trace!("Queueing track {:?}", track);
-			if let Err(why) =
-
-			&lava_client.play(guild_id, track.clone())
-				// Change this to play() if you want your own custom queue or no queue at all.
-				.queue()
-				.await
-			{
-				log::error!("An error occurred: {:?}", why);
-				return Ok(());
-			};
+		if is_link(query.as_str()) {
+			for track in &query_information.tracks {
+				log::trace!("Queueing track {:?}", track);
+				if let Err(why) = add_link_to_queue(&lava_client, guild_id, track.clone()).await {
+					log::error!("{}", why)
+				}
+			}
+		} else {
+			if let Err(why) = add_link_to_queue(&lava_client, guild_id, query_information.tracks[0].clone()).await {
+				log::error!("{}", why)
+			}
 		}
 
 		msg.channel_id
@@ -67,5 +70,12 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 			.await?;
 	}
 
+	Ok(())
+}
+
+async fn add_link_to_queue(lava_client: &LavalinkClient, guild_id: GuildId, track: Track) -> Result<(), LavalinkError> {
+	lava_client.play(guild_id, track)
+		.queue()
+		.await?;
 	Ok(())
 }

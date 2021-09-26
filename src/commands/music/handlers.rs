@@ -39,7 +39,7 @@ impl LavalinkEventHandler for LavalinkHandler {
 	}
 
 	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
-		log::info!("Track in guild {} finished with reason {}", event.guild_id, event.reason)
+		log::info!("Track in guild {} finished with reason {}", event.guild_id, event.reason);
 	}
 }
 
