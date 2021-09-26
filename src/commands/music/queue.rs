@@ -39,7 +39,13 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 				if i >= queue.len() { break; } //Stop the loop at the end of the Vector
 				page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
 			}
-			page_content.push_str(&format!("\n\nPage {} of {}", page, (((queue.len() - 1) as f64) / 15.0).ceil()))
+			page_content.push_str(&format!(
+				"\n\nPage {} of {}\t\tQueue contains {} songs",
+				page,
+				(((queue.len() - 1) as f64) / 15.0).ceil(),
+				queue.len()
+			)
+			)
 		} else {
 			page_content = "Queue is empty".to_string();
 		}
