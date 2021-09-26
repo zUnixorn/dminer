@@ -40,7 +40,7 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 				page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
 			}
 			page_content.push_str(&format!(
-				"\n\nPage {} of {}\t\tQueue contains {} songs",
+				"\n\nPage {} of {} ({} songs total)",
 				page,
 				(((queue.len() - 1) as f64) / 15.0).ceil(),
 				queue.len()

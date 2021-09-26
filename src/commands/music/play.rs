@@ -45,12 +45,12 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 		if is_link(query.as_str()) {
 			for track in &query_information.tracks {
 				log::trace!("Queueing track {:?}", track);
-				if let Err(why) = add_link_to_queue(&lava_client, guild_id, track.clone()) {
+				if let Err(why) = add_link_to_queue(&lava_client, guild_id, track.clone()).await {
 					log::error!("{}", why)
 				}
 			}
 		} else {
-			if let Err(why) = add_link_to_queue(&lava_client, guild_id, query_information.tracks[0].clone()) {
+			if let Err(why) = add_link_to_queue(&lava_client, guild_id, query_information.tracks[0].clone()).await {
 				log::error!("{}", why)
 			}
 		}
