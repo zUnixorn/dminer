@@ -13,3 +13,4 @@ pub mod resume;
 pub mod shuffle;
 pub mod handlers;
 pub mod youtube_search;
+pub mod next;
