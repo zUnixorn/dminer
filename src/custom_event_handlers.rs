@@ -1,16 +1,9 @@
 use serenity::{
 	async_trait,
-	model::{channel::Message, event::PresenceUpdateEvent, gateway::Ready},
+	model::gateway::Ready,
 	prelude::*,
 };
-use serenity::model::event::MessageUpdateEvent;
-use serenity::model::id::{ChannelId, GuildId, MessageId};
 use serenity::model::prelude::Guild;
-
-use crate::activity_db::ActivityDb;
-use crate::connection_pool::ConnectionPool;
-use crate::message_db::MessageDb;
-use crate::user_db::UserDb;
 
 pub struct Handler;
 
@@ -24,129 +17,6 @@ impl EventHandler for Handler {
 	) {
 		if is_new {
 			log::info!("Got invited into a new guild with name '{}' and id '{}'", guild.name, guild.id,)
-		}
-	}
-
-	async fn message(&self, ctx: Context, message: Message) {
-		// log::info!("Message by: {} with content: {}", message.author.name, message.content);
-		let msg = MessageDb::from_message(message);
-		let result = msg.write_to_db(
-			ctx
-				.data
-				.read()
-				.await
-				.get::<ConnectionPool>()
-				.unwrap() //if it's not there the world is burning anyways
-		).await;
-
-		if let Err(why) = result {
-			log::error!("Error writing message to DB: {:?}", why)
-		}
-	}
-
-	async fn message_delete(
-		&self,
-		ctx: Context,
-		_channel_id: ChannelId,
-		deleted_message_id: MessageId,
-		_guild_id: Option<GuildId>,
-	) {
-		log::info!("Message with id {} was deleted", deleted_message_id);
-		let result = MessageDb::mark_deleted(
-			i64::from(deleted_message_id),
-			ctx
-				.data
-				.read()
-				.await
-				.get::<ConnectionPool>()
-				.unwrap(),
-		).await;
-
-		if let Err(why) = result {
-			log::error!("Error writing message to DB: {:?}", why)
-		}
-	}
-
-	async fn message_delete_bulk(
-		&self,
-		ctx: Context,
-		_channel_id: ChannelId,
-		multiple_deleted_messages_ids: Vec<MessageId>,
-		_guild_id: Option<GuildId>,
-	) {
-		log::debug!("Bulk delete incoming:\n{:?}", multiple_deleted_messages_ids);
-
-		for deleted_message_id in multiple_deleted_messages_ids {
-			log::trace!("[In loop]: Message with id {} was deleted", deleted_message_id);
-			let result = MessageDb::mark_deleted(
-				i64::from(deleted_message_id),
-				ctx
-					.data
-					.read()
-					.await
-					.get::<ConnectionPool>()
-					.unwrap(),
-			).await;
-
-			if let Err(why) = result {
-				log::error!("Error writing message to DB: {:?}", why)
-			}
-		}
-	}
-
-	async fn message_update(
-		&self,
-		ctx: Context,
-		_old_if_available: Option<Message>,
-		_new: Option<Message>,
-		event: MessageUpdateEvent,
-	) {
-		//Can't use the new Message Object, in testing it has been absent every time.
-		if let Some(content) = event.content {
-			let message_id = i64::from(event.id);
-			let result = MessageDb::update_message(&message_id, &content, ctx
-				.data
-				.read()
-				.await
-				.get::<ConnectionPool>()
-				.unwrap(),
-			).await;
-			log::info!("Message with id {} got updated. New Content: {}", &message_id, &content);
-
-			if let Err(why) = result {
-				log::error!("Error writing message to DB: {:?}", why)
-			}
-		} else {
-			log::debug!("Content from modified message absent")
-		}
-	}
-
-	async fn presence_update(
-		&self, ctx: Context,
-		new_data: PresenceUpdateEvent,
-	) {
-		log::trace!("Got presence update"); //Now, you might think this should be level Debug maybe. Thing is, there are presence updates sometimes multiple times a second, it just gets waaaaay too spammy
-
-		let presence = new_data.presence;
-
-		UserDb::from_presence(presence.clone())
-			.write_to_db(ctx
-				.data
-				.read()
-				.await
-				.get::<ConnectionPool>()
-				.unwrap()
-			).await.unwrap();
-
-		for activity in presence.activities {
-			ActivityDb::from_activity(activity, i64::from(presence.user_id))
-				.write_to_db(ctx
-					.data
-					.read()
-					.await
-					.get::<ConnectionPool>()
-					.unwrap()
-				).await.unwrap();
 		}
 	}
 

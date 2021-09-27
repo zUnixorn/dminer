@@ -11,7 +11,7 @@ A release binary is usually provided for each release.
 If a build with specific features you want is not available, you should compile your own. \
 The log level of the bot is currently configured in the source code, for a custom log level you have to self
 compile. \
-The instructions are mainly with linux in mind as we do develop or run the bot on Windows. 
+The instructions are mainly with linux in mind as we do not develop or run the bot on Windows. 
 They should still apply almost 1:1 for windows besides some commands regarding terminal / commandline usage.
 
 ### Self compiling:
