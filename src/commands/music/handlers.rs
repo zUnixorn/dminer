@@ -19,7 +19,6 @@ use crate::commands::music::util::CallerChannel;
 impl LavalinkEventHandler for LavalinkHandler {
 	async fn track_start(&self, client: LavalinkClient, event: TrackStart) {
 		//Use the data inside the Node Struct to store a Channel ID in the data Typemap field
-
 		if let Some(node) = client.nodes().await.get(&event.guild_id) {
 			if let Some(current_track) = &node.now_playing {
 				let typemap = node.data.read().await;
@@ -34,10 +33,8 @@ impl LavalinkEventHandler for LavalinkHandler {
 				).await;
 			}
 		}
-
-		log::info!("A track in guild {} was started!", event.guild_id)
+		log::info!("A track in guild {} was started!", event.guild_id);
 	}
-
 	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
 		log::info!("Track in guild {} finished with reason {}", event.guild_id, event.reason);
 	}
