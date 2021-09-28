@@ -10,7 +10,6 @@ use serenity::{
 use serenity::prelude::{Context, Mentionable};
 
 use crate::commands::music::handlers::Lavalink;
-use crate::commands::music::util::set_caller_channel;
 
 #[command]
 #[description("Lets the bot join into your voice channel.")]
@@ -41,10 +40,6 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 			let data = ctx.data.read().await;
 			let lava_client = data.get::<Lavalink>().unwrap().clone();
 			lava_client.create_session(&connection_info).await?;
-
-			if let Some(node) = lava_client.nodes().await.get(guild_id.as_u64()) {
-				set_caller_channel(&node, ctx.http.clone(), msg.channel_id).await;
-			}
 
 			msg.channel_id
 				.say(&ctx.http, &format!("Joined {}", connect_to.mention()))

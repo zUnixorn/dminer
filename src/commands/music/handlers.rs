@@ -13,13 +13,12 @@ use songbird::{
 	EventHandler as VoiceEventHandler,
 };
 
-use crate::commands::music::util::CallerChannel;
-
 #[async_trait]
 impl LavalinkEventHandler for LavalinkHandler {
 	async fn track_start(&self, _client: LavalinkClient, event: TrackStart) {
 		log::info!("A track in guild {} was started!", event.guild_id);
 	}
+
 	async fn track_finish(&self, _client: LavalinkClient, event: TrackFinish) {
 		log::info!("Track in guild {} finished with reason {}", event.guild_id, event.reason);
 	}
