@@ -25,6 +25,8 @@ async fn next(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 					format!("Moved track `{}` to the beginning of the queue", queue[1].track.info.as_ref().unwrap().title),
 				).await?;
 			}
+		} else {
+			msg.channel_id.say(&ctx.http, "Incorrect Arguments given").await?;
 		}
 	}
 
