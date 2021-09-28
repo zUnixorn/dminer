@@ -12,7 +12,10 @@ use serenity::{
 	},
 };
 
-use crate::commands::{hate::*, math::*, meta::*};
+use crate::commands::{hate::*, meta::*};
+
+#[cfg(feature = "math")]
+use crate::commands::math::*;
 
 #[cfg(feature = "music")]
 use crate::music::{
@@ -34,6 +37,7 @@ use crate::music::{
 #[commands(ping, latency, hate, shill, invite)]
 pub struct General;
 
+#[cfg(feature = "math")]
 #[group]
 #[prefix = "math"]
 #[commands(eval)]

@@ -136,11 +136,14 @@ async fn main() {
 		// They're made in the pattern: `#name_GROUP` for the group instance and `#name_GROUP_OPTIONS`.
 		// #name is turned all uppercase
 		.help(&MY_HELP)
-		.group(&GENERAL_GROUP)
-		.group(&MATH_GROUP);
+		.group(&GENERAL_GROUP);
+
 
 	#[cfg(feature = "music")]
 		let framework = framework.group(&MUSIC_GROUP);
+
+	#[cfg(feature = "math")]
+		let framework = framework.group(&MATH_GROUP);
 
 	let client = Client::builder(&config_data.general.token)
 		.event_handler(Handler)
