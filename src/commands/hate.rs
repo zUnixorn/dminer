@@ -10,6 +10,7 @@ use serenity::prelude::{Context, TypeMapKey};
 
 #[command]
 #[description("Gives you a nice message by linus torvalds :)")]
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 async fn hate(ctx: &Context, msg: &Message) -> CommandResult {
 	let data = ctx.data.read().await;
 	let messages = data.get::<HateMessage>().unwrap();
@@ -40,7 +41,7 @@ impl Display for HateMessage {
 }
 
 
-pub async fn load_hate_messages(path_to_hate_file: &str) -> Vec<HateMessage> {
+pub fn load_hate_messages(path_to_hate_file: &str) -> Vec<HateMessage> {
 	log::debug!("Reading hate json");
 	let file = File::open(path_to_hate_file).expect("Hate json not found");
 	log::debug!("Parsing hate json");

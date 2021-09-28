@@ -5,8 +5,8 @@ use serenity::framework::standard::{CommandResult, macros::command};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
-use crate::ShardManagerContainer;
 use crate::config::ConfigData;
+use crate::ShardManagerContainer;
 
 #[command]
 #[description("Replies with \"Pong!\"")]
@@ -24,7 +24,7 @@ pub async fn invite(ctx: &Context, msg: &Message) -> CommandResult {
 	let invite_url = &config_data.general.invite_url;
 
 	msg.channel_id.send_message(&ctx.http, |message| {
-		message.embed(|embed|{
+		message.embed(|embed| {
 			embed.title("Let me join your server :)");
 			embed.url(invite_url);
 			embed
@@ -42,13 +42,13 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 	// retrieving information about shards.
 	let data = ctx.data.read().await;
 
-	let shard_manager = match data.get::<ShardManagerContainer>() {
-		Some(v) => v,
-		None => {
-			msg.reply(ctx, "There was a problem getting the shard manager").await?;
+	let shard_manager = if let Some(sm) = data.get::<ShardManagerContainer>() {
+		sm
+	} else {
+		msg.reply(&ctx.http, "There was a problem getting the shard manager").await?;
+		log::error!("There was a problem getting the shard manager container");
 
-			return Ok(());
-		}
+		return Ok(());
 	};
 
 	let manager = shard_manager.lock().await;
@@ -57,16 +57,19 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
 	// Shards are backed by a "shard runner" responsible for processing events
 	// over the shard, so we'll get the information about the shard runner for
 	// the shard this command was sent over.
-	let runner = match runners.get(&ShardId(ctx.shard_id)) {
-		Some(runner) => runner,
-		None => {
-			msg.reply(ctx, "No shard found").await?;
+	let runner = if let Some(runner) = runners.get(&ShardId(ctx.shard_id)) {
+		runner
+	} else {
+		msg.reply(&ctx.http, "No shard found").await?;
+		log::error!("No shard found");
 
-			return Ok(());
-		}
+		return Ok(());
 	};
 
-	msg.reply(ctx, &format!("The shard latency is {:?}", runner.latency.unwrap_or(Duration::from_secs(u64::MAX)))).await?;
+	msg.reply(ctx, &format!(
+		"The shard latency is {:?}",
+		runner.latency.unwrap_or_else(|| Duration::from_secs(u64::MAX))),
+	).await?;
 
 	Ok(())
 }

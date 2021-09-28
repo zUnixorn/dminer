@@ -1,3 +1,10 @@
+#![allow(
+clippy::wildcard_imports,
+clippy::module_name_repetitions,
+clippy::non_ascii_literal,
+clippy::let_underscore_drop,
+)]
+
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -15,7 +22,6 @@ use serenity::{
 };
 use serenity::client::bridge::gateway::GatewayIntents;
 use simple_logger::SimpleLogger;
-use tokio;
 
 #[cfg(feature = "music")]
 use {
@@ -78,7 +84,7 @@ async fn main() {
 		.configure(|c| c
 			.with_whitespace(true)
 			.on_mention(Some(bot_id))
-			.prefix(&prefix)
+			.prefix(prefix)
 			// In this case, if "," would be first, a message would never
 			// be delimited at ", ", forcing you to trim your arguments if you
 			// want to avoid whitespaces at the start of each.
@@ -172,13 +178,13 @@ async fn main() {
 
 	{
 		let mut data = client.data.write().await;
-		let hate_messages = hate::load_hate_messages("./hate.json").await;
+		let hate_messages = hate::load_hate_messages("./hate.json");
 		data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
 		data.insert::<HateMessage>(hate_messages);
 		data.insert::<ConfigData>(config_data);
 	}
 
 	if let Err(why) = client.start().await {
-		log::error!("Client error: {:?}", why)
+		log::error!("Client error: {:?}", why);
 	}
 }

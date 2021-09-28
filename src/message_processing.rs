@@ -68,7 +68,7 @@ pub async fn unknown_command(ctx: &Context, msg: &Message, unknown_command_name:
 	).await;
 
 	if let Err(why) = reply {
-		log::error!("Error replying to unknown command: {:?}", why)
+		log::error!("Error replying to unknown command: {:?}", why);
 	}
 }
 
