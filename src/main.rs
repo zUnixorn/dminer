@@ -88,24 +88,8 @@ async fn main() {
 			.owners(owners)
 		)
 
-		// Set a function to be called prior to each command execution. This
-		// provides the context of the command, the message that was received,
-		// and the full name of the command that will be called.
-		//
-		// Avoid using this to determine whether a specific command should be
-		// executed. Instead, prefer using the `#[check]` macro which
-		// gives you this functionality.
-		//
-		// **Note**: Async closures are unstable, you may use them in your
-		// application if you are fine using nightly Rust.
-		// If not, we need to provide the function identifiers to the
-		// hook-functions (before, after, normal, ...).
 		.before(before)
-		// Similar to `before`, except will be called directly _after_
-		// command execution.
 		.after(after)
-		// Set a function that's called whenever an attempted command-call's
-		// command could not be found.
 		.unrecognised_command(unknown_command)
 		// Set a function that's called whenever a message is not a command.
 		.normal_message(normal_message)
