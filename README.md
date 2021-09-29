@@ -57,7 +57,7 @@ You can copy, rename it to `config.toml` and then replace the placeholder values
 The config file **must be**  be in the same directory as the bot, otherwise it will not start. \
 If you are running with the music feature enabled you should also configure the music related settings
 in the config file since otherwise the bot **will** fail to start. \
-You can get a token for your bot on the [discord developers page](https://discord.com/developers/applications). \
+You can get a token for your bot on the [discord developers page](https://discord.com/developers/applications). 
 
 #### Usage
 
