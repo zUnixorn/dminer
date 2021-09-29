@@ -64,7 +64,7 @@ You can get a token for your bot on the [discord developers page](https://discor
 If the configuration is completed you can start the bot binary through a terminal (or command prompt
 if you are on Windows).
 If the bot starts successfully you can keep it open by starting it in a tmux session (which is what we do
-on our server. If you have the music feature enabled, you can do the same thing with Lavalink/Andesite). \
+on our server. If you have the music feature enabled, you can do the same thing with Lavalink/Andesite). 
 
 The only thing left to do now is to invite your bot to your server, the available commands can be viewed 
 with the help command (if the prefix is `~` the usage would be `~help`).
