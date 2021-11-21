@@ -3,7 +3,7 @@ mod util;
 pub mod queue;
 pub mod join;
 pub mod leave;
-pub mod play;
+pub mod play_insert;
 pub mod skip;
 pub mod info;
 pub mod remove;

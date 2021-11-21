@@ -21,7 +21,7 @@ use crate::music::{
 	join::*,
 	leave::*,
 	pause::*,
-	play::*,
+	play_insert::*,
 	queue::*,
 	remove::*,
 	resume::*,
@@ -42,7 +42,7 @@ struct Math;
 #[cfg(feature = "music")]
 #[group]
 #[only_in(guilds)]
-#[commands(join, leave, play, skip, info, queue, clear, pause, unpause, remove, shuffle, youtube_search)]
+#[commands(join, leave, play, skip, info, queue, clear, pause, unpause, remove, shuffle, youtube_search, insert)]
 pub struct Music;
 
 #[hook]
