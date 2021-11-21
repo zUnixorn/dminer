@@ -12,7 +12,10 @@ use serenity::{
 	},
 };
 
-use crate::commands::{hate::*, math::*, meta::*};
+use crate::commands::{hate::*, meta::*};
+
+#[cfg(feature = "math")]
+use crate::commands::math::*;
 
 #[cfg(feature = "music")]
 use crate::music::{
@@ -28,12 +31,14 @@ use crate::music::{
 	shuffle::*,
 	skip::*,
 	youtube_search::*,
+	next::*,
 };
 
 #[group]
 #[commands(ping, latency, hate, shill, invite)]
 pub struct General;
 
+#[cfg(feature = "math")]
 #[group]
 #[prefix = "math"]
 #[commands(eval)]
@@ -42,7 +47,7 @@ struct Math;
 #[cfg(feature = "music")]
 #[group]
 #[only_in(guilds)]
-#[commands(join, leave, play, skip, info, queue, clear, pause, unpause, remove, shuffle, youtube_search, insert)]
+#[commands(join, leave, play, skip, info, queue, clear, pause, unpause, remove, shuffle, youtube_search, insert, next)]
 pub struct Music;
 
 #[hook]
@@ -68,7 +73,7 @@ pub async fn unknown_command(ctx: &Context, msg: &Message, unknown_command_name:
 	).await;
 
 	if let Err(why) = reply {
-		log::error!("Error replying to unknown command: {:?}", why)
+		log::error!("Error replying to unknown command: {:?}", why);
 	}
 }
 

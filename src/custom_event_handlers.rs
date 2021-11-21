@@ -16,7 +16,7 @@ impl EventHandler for Handler {
 		is_new: bool,
 	) {
 		if is_new {
-			log::info!("Got invited into a new guild with name '{}' and id '{}'", guild.name, guild.id,)
+			log::info!("Got invited into a new guild with name '{}' and id '{}'", guild.name, guild.id,);
 		}
 	}
 
@@ -25,6 +25,6 @@ impl EventHandler for Handler {
 		_ctx: Context,
 		data_about_bot: Ready,
 	) {
-		log::info!("{} está aqui!", data_about_bot.user.name)
+		log::info!("{} está aqui!", data_about_bot.user.name);
 	}
 }

@@ -1,5 +1,6 @@
 pub mod meta;
-pub mod math;
 pub mod hate;
 #[cfg(feature = "music")]
 pub mod music;
+#[cfg(feature = "math")]
+pub mod math;
