@@ -7,11 +7,12 @@ use serenity::{
 			macros::command,
 		},
 	},
-	model::{channel::Message},
+	model::channel::Message,
 };
 use serenity::prelude::Context;
 
 use crate::commands::music::handlers::Lavalink;
+use crate::music::util::format_millis;
 
 #[command]
 #[description("Displays the songs that are currently queued, split up into pages of 15 songs per page.")]
@@ -35,19 +36,34 @@ async fn queue(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 	if let Some(node) = lava_client.nodes().await.get(&guild_id) {
 		let queue = &node.queue;
 		if queue.len() > 1 {
+			// page_content.push_str("```\n"); //start code block
+
 			for i in ((15 * (page - 1)) + 1)..((15 * page) + 1) { //Iterate over the vector in slices of 15 elements
 				if i >= queue.len() { break; } //Stop the loop at the end of the Vector
 				page_content.push_str(&format!("{} . {}\n", i, queue[i].track.info.as_ref().unwrap().title))
 			}
+
+			let mut playlist_duration = 0;
+
+			for track in queue {
+				if let Some(info) = &track.track.info {
+					playlist_duration += info.length;
+				}
+			}
+
 			page_content.push_str(&format!(
-				"\n\nPage {} of {} ({} songs total)",
+				"\
+				\n\nPage {} of {} ({} songs total)\
+				\nTotal Duration: {}\
+				",
 				page,
 				(((queue.len() - 1) as f64) / 15.0).ceil(),
-				queue.len()
-			)
-			)
+				queue.len(),
+				format_millis(playlist_duration)
+			));
+			// page_content.push_str("```\n"); //end code block
 		} else {
-			page_content = "Queue is empty".to_string();
+			page_content = "The queue is empty.".to_string();
 		}
 	};
 

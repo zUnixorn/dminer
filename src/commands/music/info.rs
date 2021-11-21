@@ -22,6 +22,7 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
 					message.embed(
 						|embed| {
 							embed.field("Title: ", &track.track.info.as_ref().unwrap().title, false)
+								.field("Artist: ", &track.track.info.as_ref().unwrap().author, false)
 								.field("Link: ", &track.track.info.as_ref().unwrap().uri, false)
 								.field("Duration: ", format_millis(duration), false)
 								.field("Duration left: ", format_millis(duration_left), false)
