@@ -122,9 +122,9 @@ async fn insert(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 		}
 
 		if is_link(query.as_str()) && !query_information.tracks.is_empty() {
-			for track in query_information.tracks.clone().iter().rev() {
+			for track in query_information.tracks.clone().into_iter().rev() {
 				log::trace!("Queueing track {:?}", track);
-				if let Err(why) = add_link_to_queue(&lava_client, guild_id, track.clone()).await {
+				if let Err(why) = add_link_to_queue(&lava_client, guild_id, track).await {
 					log::error!("{}", why);
 				}
 
