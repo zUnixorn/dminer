@@ -37,7 +37,7 @@ search for a song on YouTube and more. \
 It requires a bit more setup to get running since it uses [Lavalink](https://github.com/freyacodes/Lavalink)
 to play and search for music which is an external program. 
 Either [Lavalink](https://github.com/freyacodes/Lavalink) or [Andesite](https://github.com/natanbc/andesite)
-can be utilized, choose whichever you prefer. (If you have no idea, in our own instance we use Andesite but
+can be utilized, choose whichever you prefer. (If you have no idea, in our own instance we use Lavalink but
 either is fine). 
 
 ##### Feature all:
