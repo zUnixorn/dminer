@@ -27,7 +27,6 @@ impl TypeMapKey for ConfigData {
 	type Value = ConfigData;
 }
 
-
 pub fn read_config() -> ConfigData {
 	log::debug!("Reading config file");
 	let mut config_file = File::open("./config.toml").expect("Configuration file not found");
