@@ -13,3 +13,4 @@ pub mod resume;
 pub mod shuffle;
 pub mod handlers;
 pub mod next;
+pub mod swap;
